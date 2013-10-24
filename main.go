@@ -19,6 +19,8 @@ type MWApi struct {
     edittoken string
 }
 
+type Values map[string]string
+
 type OuterLogin struct {
     Login LoginResponse `xml:"login"`
 }
@@ -30,6 +32,18 @@ type LoginResponse struct {
 
 type Query struct {
     Pages []Page `xml:"query>pages>page"`
+}
+
+type OuterEdit struct {
+    EditResponse Edit `xml:"edit"`
+}
+
+type Edit struct {
+    Result string `xml:"result,attr"`
+    PageId string `xml:"pageid,atrr"`
+    Title string `xml:"title,attr"`
+    OldRevId int `xml:"oldrevid,attr"`
+    NewRevId int `xml:"newrevid,attr"`
 }
 
 type Page struct {
@@ -157,7 +171,32 @@ func (m *MWApi) Logout() {
     m.PostForm(query)
 }
 
-func (m *MWApi) Query() {
+func (m *MWApi) Edit(values Values) error {
     query := m.url.Query()
-    query.Set("action", "query")
+    query.Set("action", "edit")
+    query.Set("format", "xml")
+    for key, value := range values {
+        query.Set(key, value)
+    }
+    if m.edittoken == "" {
+        err := m.GetEditToken()
+        if err != nil {
+            return err
+        }
+    }
+    query.Set("token", m.edittoken)
+    body, err := m.PostForm(query)
+    if err != nil {
+        return err
+    }
+    var response OuterEdit
+    err = xml.Unmarshal(body, &response)
+    if err != nil {
+        return err
+    }
+    if response.EditResponse.Result == "Success" {
+        return nil
+    } else {
+        return errors.New(response.EditResponse.Result)
+    }
 }

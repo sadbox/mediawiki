@@ -2,4 +2,5 @@
     <WikiURL>http://en.wikipedia.org/w/api.php</WikiURL>
     <Username>YOUR USERNAME</Username>
     <Password>YOUR PASSWORD</Password>
+    <Domain>example.org</Domain>
 </Config>

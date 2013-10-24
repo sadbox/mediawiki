@@ -10,6 +10,7 @@ type Config struct {
     WikiURL string
     Username string
     Password       string
+    Domain string
 }
 
 func main() {
@@ -27,13 +28,21 @@ func main() {
 
     client.Username = config.Username
     client.Password = config.Password
-    //client.Domain = "example.org"
+    client.Domain = config.Domain
 
     err = client.Login()
     if err != nil {
         panic(err)
     }
-    client.GetEditToken()
 
+    editConfig := mwapi.Values{
+        "title": "NOC Test",
+        "summary": "TESTING",
+        "text": "CLEARD FOR TESTING",
+    }
+    err = client.Edit(editConfig)
+    if err != nil {
+        panic(err)
+    }
     client.Logout()
 }
