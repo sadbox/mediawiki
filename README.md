@@ -3,6 +3,14 @@ go-mwapi
 
 A MediaWiki API built in go
 
+TODO
+----
+- [x] Login/Logout
+- [x] Edit Pages
+- [ ] Read Pages
+- [ ] Upload
+- [ ] Download
+- [ ] Generic API Interface
 
 Disclaimers
 -----------
