@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 )
 
+var config Config
+
 type Config struct {
 	WikiURL  string
 	Username string
@@ -13,14 +15,16 @@ type Config struct {
 	Domain   string
 }
 
-func main() {
-	var config Config
+func init() {
+	// None of this is relevant to the actual wiki API, just getting configurations
 	xmlFile, err := ioutil.ReadFile("config.xml")
 	if err != nil {
 		panic(err)
 	}
 	xml.Unmarshal(xmlFile, &config)
+}
 
+func main() {
 	client, err := mwapi.New(config.WikiURL)
 	if err != nil {
 		panic(err)
@@ -34,15 +38,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer client.Logout()
 
 	editConfig := mwapi.Values{
-		"title":   "NOC Test",
-		"summary": "TESTING",
-		"text":    "CLEARD FOR TESTING",
+		"title":   "SOME PAGE",
+		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",
+		"text":    "THE ENTIRE TEXT OF THE PAGE",
 	}
 	err = client.Edit(editConfig)
 	if err != nil {
 		panic(err)
 	}
-	client.Logout()
 }
