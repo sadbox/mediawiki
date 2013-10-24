@@ -10,8 +10,8 @@ import (
 )
 
 type MWApi struct {
-    username string
-    password string
+    Username string
+    Password string
     Domain string
     url *url.URL
     client *http.Client
@@ -27,7 +27,7 @@ type LoginResponse struct {
     Token string `xml:"token,attr"`
 }
 
-func New(wikiUrl, username, password string) (*MWApi, error) {
+func New(wikiUrl string) (*MWApi, error) {
     cookiejar, err := cookiejar.New(nil)
     if err != nil {
         return nil, err
@@ -45,12 +45,9 @@ func New(wikiUrl, username, password string) (*MWApi, error) {
     }
 
     return &MWApi{
-        username: username,
-        password: password,
         url: clientUrl,
         client: &client,
         format: "xml",
-        Domain: "",
     }, nil
 }
 
@@ -70,14 +67,20 @@ func (m *MWApi) PostForm(query url.Values) ([]byte, error) {
 }
 
 func (m *MWApi) Login() (error) {
+    if m.Username == "" || m.Password == "" {
+        return errors.New("Username or password not set.")
+    }
+
     query := m.url.Query()
     query.Set("action", "login")
-    query.Set("lgname", m.username)
-    query.Set("lgpassword", m.password)
+    query.Set("lgname", m.Username)
+    query.Set("lgpassword", m.Password)
     query.Set("format", m.format)
+
     if m.Domain != "" {
         query.Set("lgdomain", m.Domain)
     }
+
     body, err := m.PostForm(query)
     if err != nil {
         return err
@@ -125,9 +128,4 @@ func (m *MWApi) Query() {
     query := m.url.Query()
     query.Set("action", "query")
     query.Set("", "")
-}
-
-func (m *MWApi) LoginDomain(username, password, domain string) (error) {
-    m.client.Get("STUFF")
-    return nil
 }
