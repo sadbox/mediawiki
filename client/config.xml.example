@@ -1,0 +1,5 @@
+<Config>
+    <WikiURL>http://en.wikipedia.org/w/api.php</WikiURL>
+    <Username>YOUR USERNAME</Username>
+    <Password>YOUR PASSWORD</Password>
+</Config>

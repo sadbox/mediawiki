@@ -16,6 +16,7 @@ type MWApi struct {
     url *url.URL
     client *http.Client
     format string
+    edittoken string
 }
 
 type OuterLogin struct {
@@ -25,6 +26,21 @@ type OuterLogin struct {
 type LoginResponse struct {
     Result string `xml:"result,attr"`
     Token string `xml:"token,attr"`
+}
+
+type Query struct {
+    Pages []Page `xml:"query>pages>page"`
+}
+
+type Page struct {
+    PageId string `xml:"pageid,attr"`
+    Ns string `xml:"ns,attr"`
+    Title string `xml:"title,attr"`
+    Touched string `xml:"touched,attr"`
+    Lastrevid int64 `xml:"lastrevid,attr"`
+    Counter int `xml:"counter,attr"`
+    Length int `xml:"length,attr"`
+    Edittoken string `xml:"edittoken,attr"`
 }
 
 func New(wikiUrl string) (*MWApi, error) {
@@ -118,6 +134,23 @@ func (m *MWApi) Login() (error) {
     }
 }
 
+func (m *MWApi) GetEditToken() error {
+    query := m.url.Query()
+    query.Set("action", "query")
+    query.Set("prop", "info|revisions")
+    query.Set("intoken", "edit")
+    query.Set("titles", "Main Page")
+    query.Set("format", "xml")
+    body, err := m.PostForm(query)
+    var response Query
+    err = xml.Unmarshal(body, &response)
+    if err != nil {
+        return err
+    }
+    m.edittoken = response.Pages[0].Edittoken
+    return nil
+}
+
 func (m *MWApi) Logout() {
     query := m.url.Query()
     query.Set("action", "logout")
@@ -127,5 +160,4 @@ func (m *MWApi) Logout() {
 func (m *MWApi) Query() {
     query := m.url.Query()
     query.Set("action", "query")
-    query.Set("", "")
 }
