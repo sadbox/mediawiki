@@ -1,48 +1,48 @@
 package main
 
 import (
-    "github.com/sadbox/go-mwapi"
-    "encoding/xml"
-    "io/ioutil"
+	"encoding/xml"
+	"github.com/sadbox/go-mwapi"
+	"io/ioutil"
 )
 
 type Config struct {
-    WikiURL string
-    Username string
-    Password       string
-    Domain string
+	WikiURL  string
+	Username string
+	Password string
+	Domain   string
 }
 
 func main() {
-    var config Config
-    xmlFile, err := ioutil.ReadFile("config.xml")
-    if err != nil {
-        panic(err)
-    }
-    xml.Unmarshal(xmlFile, &config)
+	var config Config
+	xmlFile, err := ioutil.ReadFile("config.xml")
+	if err != nil {
+		panic(err)
+	}
+	xml.Unmarshal(xmlFile, &config)
 
-    client, err := mwapi.New(config.WikiURL)
-    if err != nil {
-        panic(err)
-    }
+	client, err := mwapi.New(config.WikiURL)
+	if err != nil {
+		panic(err)
+	}
 
-    client.Username = config.Username
-    client.Password = config.Password
-    client.Domain = config.Domain
+	client.Username = config.Username
+	client.Password = config.Password
+	client.Domain = config.Domain
 
-    err = client.Login()
-    if err != nil {
-        panic(err)
-    }
+	err = client.Login()
+	if err != nil {
+		panic(err)
+	}
 
-    editConfig := mwapi.Values{
-        "title": "NOC Test",
-        "summary": "TESTING",
-        "text": "CLEARD FOR TESTING",
-    }
-    err = client.Edit(editConfig)
-    if err != nil {
-        panic(err)
-    }
-    client.Logout()
+	editConfig := mwapi.Values{
+		"title":   "NOC Test",
+		"summary": "TESTING",
+		"text":    "CLEARD FOR TESTING",
+	}
+	err = client.Edit(editConfig)
+	if err != nil {
+		panic(err)
+	}
+	client.Logout()
 }
