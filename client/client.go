@@ -1,7 +1,7 @@
 package main
 
 import (
-    "sandbox/go-mwapi"
+    "github.com/sadbox/go-mwapi"
 )
 
 func main() {
