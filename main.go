@@ -23,6 +23,7 @@ type MWApi struct {
 // This is used for passing data to the mediawiki API via key=value in a POST
 type Values map[string]string
 
+// Unmarshal login data...
 type outerLogin struct {
 	Login loginResponse
 }
@@ -32,6 +33,7 @@ type loginResponse struct {
 	Token  string
 }
 
+// Unmarshall response from page edits...
 type outerEdit struct {
 	Edit edit
 }
@@ -44,6 +46,7 @@ type edit struct {
 	NewRevId int
 }
 
+// Getting back an edit token...
 type editTokenQuery struct {
 	Query query
 }
@@ -115,17 +118,17 @@ func (m *MWApi) Login() error {
 		return errors.New("Username or password not set.")
 	}
 
-	query := m.url.Query()
-	query.Set("action", "login")
-	query.Set("lgname", m.Username)
-	query.Set("lgpassword", m.Password)
-	query.Set("format", m.format)
+    query := Values{
+        "action": "login",
+        "lgname": m.Username,
+        "lgpassword": m.Password,
+    }
 
 	if m.Domain != "" {
-		query.Set("lgdomain", m.Domain)
+		query["lgdomain"] = m.Domain
 	}
 
-	body, err := m.postForm(query)
+	body, _, err := m.API(query)
 	if err != nil {
 		return err
 	}
@@ -143,9 +146,9 @@ func (m *MWApi) Login() error {
 	}
 
 	// Need to use the login token
-	query.Set("lgtoken", response.Login.Token)
+	query["lgtoken"] = response.Login.Token
 
-	body, err = m.postForm(query)
+	body, _, err = m.API(query)
 	if err != nil {
 		return err
 	}
@@ -170,13 +173,14 @@ func (m *MWApi) Login() error {
 // but it is available if you want to make direct
 // calls to API().
 func (m *MWApi) GetEditToken() error {
-	query := m.url.Query()
-	query.Set("action", "query")
-	query.Set("prop", "info|revisions")
-	query.Set("intoken", "edit")
-	query.Set("titles", "Main Page")
-	query.Set("format", m.format)
-	body, err := m.postForm(query)
+    query := Values{
+        "action": "query",
+        "prop": "info|revisions",
+        "intoken": "edit",
+        "titles": "Main Page",
+    }
+
+	body, _, err := m.API(query)
 	if err != nil {
 		return err
 	}
@@ -185,7 +189,10 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	m.edittoken = response.Query.Pages["1"].Edittoken
+	for _, value := range response.Query.Pages {
+        m.edittoken = value.Edittoken
+        break
+    }
 	return nil
 }
 
@@ -193,9 +200,7 @@ func (m *MWApi) GetEditToken() error {
 //
 // Doesn't really matter, but good form.
 func (m *MWApi) Logout() {
-	query := m.url.Query()
-	query.Set("action", "logout")
-	m.postForm(query)
+	m.API(Values{"action": "logout"})
 }
 
 // Edit a page
