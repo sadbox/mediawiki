@@ -30,14 +30,17 @@ func main() {
 		panic(err)
 	}
 
+    // The username and passsword are required
 	client.Username = config.Username
 	client.Password = config.Password
+    // But the domain is not
 	client.Domain = config.Domain
 
 	err = client.Login()
 	if err != nil {
 		panic(err)
 	}
+    // This is probably not required
 	defer client.Logout()
 
 	editConfig := mwapi.Values{

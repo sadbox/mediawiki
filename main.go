@@ -1,7 +1,7 @@
 package mwapi
 
 import (
-	"encoding/xml"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +9,7 @@ import (
 	"net/url"
 )
 
+// The main mediawiki API struct, this is generated via mwapi.New()
 type MWApi struct {
 	Username  string
 	Password  string
@@ -19,44 +20,53 @@ type MWApi struct {
 	edittoken string
 }
 
+// This is used for passing data to the mediawiki API via key=value in a POST
 type Values map[string]string
 
-type OuterLogin struct {
-	Login LoginResponse `xml:"login"`
+type outerLogin struct {
+	Login loginResponse
 }
 
-type LoginResponse struct {
-	Result string `xml:"result,attr"`
-	Token  string `xml:"token,attr"`
+type loginResponse struct {
+	Result string
+	Token  string
 }
 
-type Query struct {
-	Pages []Page `xml:"query>pages>page"`
+type outerEdit struct {
+	Edit edit
 }
 
-type OuterEdit struct {
-	EditResponse Edit `xml:"edit"`
+type edit struct {
+	Result   string
+	PageId   int
+	Title    string
+	OldRevId int
+	NewRevId int
 }
 
-type Edit struct {
-	Result   string `xml:"result,attr"`
-	PageId   string `xml:"pageid,atrr"`
-	Title    string `xml:"title,attr"`
-	OldRevId int    `xml:"oldrevid,attr"`
-	NewRevId int    `xml:"newrevid,attr"`
+type editTokenQuery struct {
+	Query query
 }
 
-type Page struct {
-	PageId    string `xml:"pageid,attr"`
-	Ns        string `xml:"ns,attr"`
-	Title     string `xml:"title,attr"`
-	Touched   string `xml:"touched,attr"`
-	Lastrevid int64  `xml:"lastrevid,attr"`
-	Counter   int    `xml:"counter,attr"`
-	Length    int    `xml:"length,attr"`
-	Edittoken string `xml:"edittoken,attr"`
+type query struct {
+	Pages map[string]page
 }
 
+type page struct {
+	Pageid    int
+	Ns        float64
+	Title     string
+	Touched   string
+	Lastrevid float64
+	Counter   float64
+	Length    float64
+	Edittoken string
+}
+
+// Generate a new mediawiki API struct
+//
+// Example: mwapi.New("http://en.wikipedia.org/w/api.php")
+// Returns errors if the URL is invalid
 func New(wikiUrl string) (*MWApi, error) {
 	cookiejar, err := cookiejar.New(nil)
 	if err != nil {
@@ -77,11 +87,11 @@ func New(wikiUrl string) (*MWApi, error) {
 	return &MWApi{
 		url:    clientUrl,
 		client: &client,
-		format: "xml",
+		format: "json",
 	}, nil
 }
 
-func (m *MWApi) PostForm(query url.Values) ([]byte, error) {
+func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 	resp, err := m.client.PostForm(m.url.String(), query)
 	if err != nil {
 		return nil, err
@@ -96,6 +106,10 @@ func (m *MWApi) PostForm(query url.Values) ([]byte, error) {
 	return body, nil
 }
 
+// Login to the Mediawiki Website
+//
+// This will throw an error if you didn't define a username
+// or password.
 func (m *MWApi) Login() error {
 	if m.Username == "" || m.Password == "" {
 		return errors.New("Username or password not set.")
@@ -111,13 +125,13 @@ func (m *MWApi) Login() error {
 		query.Set("lgdomain", m.Domain)
 	}
 
-	body, err := m.PostForm(query)
+	body, err := m.postForm(query)
 	if err != nil {
 		return err
 	}
 
-	var response OuterLogin
-	err = xml.Unmarshal(body, &response)
+	var response outerLogin
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
 	}
@@ -131,12 +145,12 @@ func (m *MWApi) Login() error {
 	// Need to use the login token
 	query.Set("lgtoken", response.Login.Token)
 
-	body, err = m.PostForm(query)
+	body, err = m.postForm(query)
 	if err != nil {
 		return err
 	}
 
-	err = xml.Unmarshal(body, &response)
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
 	}
@@ -148,55 +162,101 @@ func (m *MWApi) Login() error {
 	}
 }
 
+// Get an edit token
+//
+// This is necessary for editing any page.
+//
+// The Edit() functio will call this automatically
+// but it is available if you want to make direct
+// calls to API().
 func (m *MWApi) GetEditToken() error {
 	query := m.url.Query()
 	query.Set("action", "query")
 	query.Set("prop", "info|revisions")
 	query.Set("intoken", "edit")
 	query.Set("titles", "Main Page")
-	query.Set("format", "xml")
-	body, err := m.PostForm(query)
-	var response Query
-	err = xml.Unmarshal(body, &response)
+	query.Set("format", m.format)
+	body, err := m.postForm(query)
 	if err != nil {
 		return err
 	}
-	m.edittoken = response.Pages[0].Edittoken
+	var response editTokenQuery
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return err
+	}
+	m.edittoken = response.Query.Pages["1"].Edittoken
 	return nil
 }
 
+// Log out of the mediawiki website
+//
+// Doesn't really matter, but good form.
 func (m *MWApi) Logout() {
 	query := m.url.Query()
 	query.Set("action", "logout")
-	m.PostForm(query)
+	m.postForm(query)
 }
 
+// Edit a page
+//
+// Refer to the client package for an example of how to
+// use this function.
+//
+// This function will automatically grab an Edit Token if there
+// is not one currently stored.
 func (m *MWApi) Edit(values Values) error {
-	query := m.url.Query()
-	query.Set("action", "edit")
-	query.Set("format", "xml")
-	for key, value := range values {
-		query.Set(key, value)
-	}
 	if m.edittoken == "" {
 		err := m.GetEditToken()
 		if err != nil {
 			return err
 		}
 	}
-	query.Set("token", m.edittoken)
-	body, err := m.PostForm(query)
+	query := Values{
+		"action": "edit",
+		"token":  m.edittoken,
+	}
+	body, _, err := m.API(query, values)
 	if err != nil {
 		return err
 	}
-	var response OuterEdit
-	err = xml.Unmarshal(body, &response)
+
+	var response outerEdit
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
 	}
-	if response.EditResponse.Result == "Success" {
+	if response.Edit.Result == "Success" {
 		return nil
 	} else {
-		return errors.New(response.EditResponse.Result)
+		return errors.New(response.Edit.Result)
 	}
+}
+
+// A generic interface to the Mediawiki API
+// Refer to the mediawiki API reference for any information regarding
+// what to pass to this function
+//
+// This is used by all internal functions to interact with the API
+//
+// The second return is simply the json data decoded in to an empty interface
+// that can be used by something like https://github.com/jmoiron/jsonq
+func (m *MWApi) API(values ...Values) ([]byte, interface{}, error) {
+	query := m.url.Query()
+	for _, valuemap := range values {
+		for key, value := range valuemap {
+			query.Set(key, value)
+		}
+	}
+	query.Set("format", m.format)
+	body, err := m.postForm(query)
+	if err != nil {
+		return nil, nil, err
+	}
+	var unmarshalto interface{}
+	err = json.Unmarshal(body, &unmarshalto)
+	if err != nil {
+		return nil, nil, err
+	}
+	return body, unmarshalto, nil
 }
