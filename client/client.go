@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/xml"
-	"github.com/sadbox/go-mwapi"
+	"github.com/sadbox/go-mediawiki"
 	"io/ioutil"
 )
 
@@ -25,7 +25,7 @@ func init() {
 }
 
 func main() {
-	client, err := mwapi.New(config.WikiURL)
+	client, err := mediawiki.New(config.WikiURL)
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +43,7 @@ func main() {
     // This is probably not required
 	defer client.Logout()
 
-	editConfig := mwapi.Values{
+	editConfig := mediawiki.Values{
 		"title":   "SOME PAGE",
 		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",
 		"text":    "THE ENTIRE TEXT OF THE PAGE",

@@ -1,4 +1,4 @@
-package mwapi
+package mediawiki
 
 import (
 	"encoding/json"
