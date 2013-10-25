@@ -1,3 +1,17 @@
+// Copyright 2013 James McGuire
+// This code is covered under the MIT License
+// Please refer to the LICENSE file in the root of this
+// repository for any information.
+
+// Mediawiki API
+//
+// Please see http://www.mediawiki.org/wiki/API:Main_page
+// for any API specific information or refer to any of the
+// functions defined for the MWApi struct for information
+// regarding this specific implementation.
+//
+// The client subdirectory contains an example application
+// that uses this API.
 package mediawiki
 
 import (
@@ -94,6 +108,7 @@ func New(wikiUrl string) (*MWApi, error) {
 	}, nil
 }
 
+// Wrapper for client.PostForm that automatially returns bytes in the Body
 func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 	resp, err := m.client.PostForm(m.url.String(), query)
 	if err != nil {
@@ -118,11 +133,11 @@ func (m *MWApi) Login() error {
 		return errors.New("Username or password not set.")
 	}
 
-    query := Values{
-        "action": "login",
-        "lgname": m.Username,
-        "lgpassword": m.Password,
-    }
+	query := Values{
+		"action":     "login",
+		"lgname":     m.Username,
+		"lgpassword": m.Password,
+	}
 
 	if m.Domain != "" {
 		query["lgdomain"] = m.Domain
@@ -172,13 +187,22 @@ func (m *MWApi) Login() error {
 // The Edit() functio will call this automatically
 // but it is available if you want to make direct
 // calls to API().
+//
+// Example:
+//
+//  editConfig := mediawiki.Values{
+//      "title":   "SOME PAGE",
+//      "summary": "THIS IS WHAT SHOWS UP IN THE LOG",
+//      "text":    "THE ENTIRE TEXT OF THE PAGE",
+//  }
+//  err = client.Edit(editConfig)
 func (m *MWApi) GetEditToken() error {
-    query := Values{
-        "action": "query",
-        "prop": "info|revisions",
-        "intoken": "edit",
-        "titles": "Main Page",
-    }
+	query := Values{
+		"action":  "query",
+		"prop":    "info|revisions",
+		"intoken": "edit",
+		"titles":  "Main Page",
+	}
 
 	body, _, err := m.API(query)
 	if err != nil {
@@ -190,9 +214,9 @@ func (m *MWApi) GetEditToken() error {
 		return err
 	}
 	for _, value := range response.Query.Pages {
-        m.edittoken = value.Edittoken
-        break
-    }
+		m.edittoken = value.Edittoken
+		break
+	}
 	return nil
 }
 
