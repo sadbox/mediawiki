@@ -1,4 +1,4 @@
-go-mwapi
+go-mediawiki
 ========
 
 A MediaWiki API built in go
