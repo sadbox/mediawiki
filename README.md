@@ -3,6 +3,10 @@ go-mwapi
 
 A MediaWiki API built in go
 
+Documentation
+-------------
+http://godoc.org/github.com/sadbox/go-mediawiki
+
 TODO
 ----
 - ☑ Login/Logout
