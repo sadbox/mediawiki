@@ -61,8 +61,8 @@ type edit struct {
 	NewRevId int
 }
 
-// Getting back an edit token...
-type editTokenQuery struct {
+// General query response from mediawiki
+type Query struct {
 	Query query
 }
 
@@ -191,18 +191,9 @@ func (m *MWApi) Login() error {
 //
 // This is necessary for editing any page.
 //
-// The Edit() functio will call this automatically
+// The Edit() function will call this automatically
 // but it is available if you want to make direct
 // calls to API().
-//
-// Example:
-//
-//  editConfig := mediawiki.Values{
-//      "title":   "SOME PAGE",
-//      "summary": "THIS IS WHAT SHOWS UP IN THE LOG",
-//      "text":    "THE ENTIRE TEXT OF THE PAGE",
-//  }
-//  err = client.Edit(editConfig)
 func (m *MWApi) GetEditToken() error {
 	query := Values{
 		"action":  "query",
@@ -215,7 +206,7 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	var response editTokenQuery
+	var response Query
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
@@ -236,11 +227,17 @@ func (m *MWApi) Logout() {
 
 // Edit a page
 //
-// Refer to the client package for an example of how to
-// use this function.
-//
 // This function will automatically grab an Edit Token if there
 // is not one currently stored.
+//
+// Example:
+//
+//  editConfig := mediawiki.Values{
+//      "title":   "SOME PAGE",
+//      "summary": "THIS IS WHAT SHOWS UP IN THE LOG",
+//      "text":    "THE ENTIRE TEXT OF THE PAGE",
+//  }
+//  err = client.Edit(editConfig)
 func (m *MWApi) Edit(values Values) error {
 	if m.edittoken == "" {
 		err := m.GetEditToken()
