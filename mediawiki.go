@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+    "strings"
 )
 
 // The main mediawiki API struct, this is generated via mwapi.New()
@@ -108,9 +109,15 @@ func New(wikiUrl string) (*MWApi, error) {
 	}, nil
 }
 
-// Wrapper for client.PostForm that automatially returns bytes in the Body
+// This will automatically add the user agent and encode the http request properly
 func (m *MWApi) postForm(query url.Values) ([]byte, error) {
-	resp, err := m.client.PostForm(m.url.String(), query)
+    request, err := http.NewRequest("POST", m.url.String(), strings.NewReader(query.Encode()))
+	if err != nil {
+		return nil, err
+	}
+    request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+    request.Header.Set("user-agent", "go-mediawiki https://github.com/sadbox/go-mediawiki")
+	resp, err := m.client.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -260,6 +267,11 @@ func (m *MWApi) Edit(values Values) error {
 	} else {
 		return errors.New(response.Edit.Result)
 	}
+}
+
+// Request a wiki page and it's metadata.
+func (m *MWApi) Read(pageName string) {
+    return
 }
 
 // A generic interface to the Mediawiki API
