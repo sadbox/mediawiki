@@ -15,6 +15,7 @@ TODO
 - ☐ Upload
 - ☐ Download
 - ☑ Generic API Interface
+- ☐ Unit tests
 
 Useful Links
 ------------
