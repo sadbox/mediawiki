@@ -4,11 +4,12 @@ A MediaWiki API wrapper for [Go](http://golang.org/)
 
 Documentation
 -------------
-All documentation is hosted on [GoDoc](http://godoc.org/)
+Documentation specific to this implementaiton is [located on GoDoc](http://godoc.org/github.com/sadbox/go-mediawiki)
 
-Examples are located in the [examples directory.](/examples)
+Documentation specific to the Mediawiki API in general is located [at their own wiki](http://www.mediawiki.org/wiki/API:Main_page)
 
-http://godoc.org/github.com/sadbox/go-mediawiki
+Examples are located in the [examples subdirectory.](/examples)
+
 
 TODO
 ----
