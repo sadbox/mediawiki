@@ -16,10 +16,10 @@ Logging In
 You do not always have to log in, but there is a helper for storing the cookies and such necessary.
 ```Go
 // The username and passsword are required
-client.Username = 'go-bot'
-client.Password = 'go-bots password'
+client.Username = "go-bot"
+client.Password = "go-bots password"
 // But the domain is not
-client.Domain = 'go-bot.org'
+client.Domain = "go-bot.org"
 
 err = client.Login()
 if err != nil {
