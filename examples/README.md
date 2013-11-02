@@ -5,7 +5,7 @@ Creating a New Connection
 ----------
 All you need to create a new MWApi struct is the URL of the site that you want to connect to
 ```Go
-client, err := mediawiki.New('http://en.wikipedia.org/w/api.php')
+client, err := mediawiki.New(`http://en.wikipedia.org/w/api.php`)
 if err != nil {
     // Handle the error
 }
@@ -40,7 +40,7 @@ editConfig := mediawiki.Values{
 }
 err = client.Edit(editConfig)
 if err != nil {
-        panic(err)
+        // Handle the error
 }
 ```
 
