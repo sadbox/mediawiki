@@ -3,6 +3,8 @@ go-mediawiki
 
 A MediaWiki API built in go
 
+[![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest)
+
 Documentation
 -------------
 http://godoc.org/github.com/sadbox/go-mediawiki
