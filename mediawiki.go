@@ -18,11 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
-    "log"
 )
 
 // The main mediawiki API struct, this is generated via mwapi.New()
@@ -30,8 +30,8 @@ type MWApi struct {
 	Username  string
 	Password  string
 	Domain    string
-    UserAgent string
-    debug     bool
+	UserAgent string
+	debug     bool
 	url       *url.URL
 	client    *http.Client
 	format    string
@@ -50,6 +50,7 @@ type loginResponse struct {
 	Result string
 	Token  string
 }
+
 // Unmarshall response from page edits...
 type outerEdit struct {
 	Edit edit
@@ -78,8 +79,8 @@ type page struct {
 	Title     string
 	Touched   string
 	Lastrevid float64
-    // This will appear as both a string and a number... and the JSON unmarshaler
-    // will crap out if this isn't set to a string.
+	// This will appear as both a string and a number... and the JSON unmarshaler
+	// will crap out if this isn't set to a string.
 	Counter   string
 	Length    float64
 	Edittoken string
@@ -107,11 +108,11 @@ func New(wikiUrl string) (*MWApi, error) {
 	}
 
 	return &MWApi{
-		url:    clientUrl,
-		client: &client,
-		format: "json",
-        UserAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki",
-        debug: false,
+		url:       clientUrl,
+		client:    &client,
+		format:    "json",
+		UserAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki",
+		debug:     false,
 	}, nil
 }
 
@@ -134,9 +135,9 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 		return nil, err
 	}
 
-    if m.debug {
-        log.Println("Post Form:", string(body))
-    }
+	if m.debug {
+		log.Println("Post Form:", string(body))
+	}
 
 	return body, nil
 }
@@ -171,10 +172,10 @@ func (m *MWApi) Login() error {
 		return err
 	}
 
-    if m.debug {
-        log.Println("Raw Response: ", string(body))
-        log.Println("Unmarshaled: ", response)
-    }
+	if m.debug {
+		log.Println("Raw Response: ", string(body))
+		log.Println("Unmarshaled: ", response)
+	}
 
 	if response.Login.Result == "Success" {
 		return nil
@@ -195,10 +196,10 @@ func (m *MWApi) Login() error {
 		return err
 	}
 
-    if m.debug {
-        log.Println("Raw Response: ", string(body))
-        log.Println("Unmarshaled: ", response)
-    }
+	if m.debug {
+		log.Println("Raw Response: ", string(body))
+		log.Println("Unmarshaled: ", response)
+	}
 
 	if response.Login.Result == "Success" {
 		return nil
@@ -280,10 +281,10 @@ func (m *MWApi) Edit(values Values) error {
 		return err
 	}
 
-    if m.debug {
-        log.Println("Raw Response: ", string(body))
-        log.Println("Unmarshaled: ", response)
-    }
+	if m.debug {
+		log.Println("Raw Response: ", string(body))
+		log.Println("Unmarshaled: ", response)
+	}
 
 	if response.Edit.Result == "Success" {
 		return nil
