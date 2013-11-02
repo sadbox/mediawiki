@@ -1,12 +1,11 @@
-go-mediawiki
+go-mediawiki [![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest)
 ========
-
-A MediaWiki API built in go
-
-[![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest)
+A MediaWiki API wrapper for [Go](http://golang.org/)
 
 Documentation
 -------------
+All documentation is hosted on [GoDoc](http://godoc.org/)
+
 http://godoc.org/github.com/sadbox/go-mediawiki
 
 TODO
@@ -31,7 +30,6 @@ https://github.com/str1ngs/jflect
 
 Disclaimers
 -----------
-
 This is (very) alpha quality but does just about everything the other go mediawiki implementations do.
 
 Check the client folder for an example client app.
@@ -41,5 +39,4 @@ Treat this repo as a WIP, it is most likely going to have multiple breaking chan
 
 License
 -------
-
 This software is licensed under the MIT license. Pull requests and issues are welcome.
