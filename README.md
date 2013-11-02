@@ -1,7 +1,11 @@
-go-mwapi
+go-mediawiki
 ========
 
 A MediaWiki API built in go
+
+Documentation
+-------------
+http://godoc.org/github.com/sadbox/go-mediawiki
 
 TODO
 ----
@@ -11,6 +15,7 @@ TODO
 - ☐ Upload
 - ☐ Download
 - ☑ Generic API Interface
+- ☐ Unit tests
 
 Useful Links
 ------------
