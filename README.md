@@ -6,6 +6,8 @@ Documentation
 -------------
 All documentation is hosted on [GoDoc](http://godoc.org/)
 
+Examples are located in the [examples directory.](/examples)
+
 http://godoc.org/github.com/sadbox/go-mediawiki
 
 TODO
