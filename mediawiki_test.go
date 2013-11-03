@@ -2,12 +2,12 @@ package mediawiki
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
-    "io/ioutil"
 )
 
 const (
@@ -15,8 +15,8 @@ const (
 	firstLogin       = `{"login":{"result":"NeedToken","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	secondLogin      = `{"login":{"result":"Success","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
-    readPage = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
-    fileUrl = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
+	readPage         = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
+	fileUrl          = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
 )
 
 type Test struct {
@@ -168,44 +168,95 @@ func TestAPI(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
-    test := BuildUp(readPage, t)
-    defer test.TearDown()
-    page, err := test.client.Read("TESTING PAGE")
-    if err != nil {
-        t.Fatal("Unable to read page: %s", err)
-    }
-    if page.Body != "FULL PAGE TEXT" {
-        t.Error("Page content not correct")
-    }
+	test := BuildUp(readPage, t)
+	defer test.TearDown()
+	page, err := test.client.Read("TESTING PAGE")
+	if err != nil {
+		t.Fatal("Unable to read page: %s", err)
+	}
+	if page.Body != "FULL PAGE TEXT" {
+		t.Error("Page content not correct")
+	}
 }
 
 func TestDownload(t *testing.T) {
-    ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			panic(err)
 		}
-        if r.Method == "POST" {
-            fmt.Fprintln(w, fmt.Sprintf(fileUrl, r.Form.Get("titles")))
-        } else if r.Method == "GET" {
-            fmt.Fprintf(w, `THINGS`)
-        }
-    }))
-    defer ts.Close()
-    client, err := New(ts.URL, "TESTING")
-    if err != nil {
-        t.Fatalf("Error creating client: %s", err.Error())
-    }
-    file, err := client.Download(ts.URL)
-    if err != nil {
-        t.Fatalf("Error downloading file: %s", err.Error())
-    }
-    defer file.Close()
-    returned, err := ioutil.ReadAll(file)
-    if err != nil {
-        t.Fatalf("Error reading downloaded file: %s", err.Error())
-    }
-    if string(returned) != "THINGS" {
-        t.Fatalf("Returned file was not correct")
-    }
+		if r.Method == "POST" {
+			fmt.Fprintln(w, fmt.Sprintf(fileUrl, r.Form.Get("titles")))
+		} else if r.Method == "GET" {
+			fmt.Fprintf(w, `THINGS`)
+		}
+	}))
+	defer ts.Close()
+	client, err := New(ts.URL, "TESTING")
+	if err != nil {
+		t.Fatalf("Error creating client: %s", err.Error())
+	}
+	file, err := client.Download(ts.URL)
+	if err != nil {
+		t.Fatalf("Error downloading file: %s", err.Error())
+	}
+	defer file.Close()
+	returned, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatalf("Error reading downloaded file: %s", err.Error())
+	}
+	if string(returned) != "THINGS" {
+		t.Fatalf("Returned file was not correct")
+	}
+}
+
+func TestUpload(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseMultipartForm(int64(10000))
+		if err != nil {
+			panic(err)
+		}
+		formValues := r.MultipartForm.Value
+		referenceValues := map[string]string{
+			"action":   "upload",
+			"format":   "json",
+			"filename": "test.txt",
+			"token":    "ASDFASDF",
+		}
+	NextKey:
+		for key, value := range formValues {
+			for innerKey, innerValue := range referenceValues {
+				if key == innerKey && value[0] == innerValue {
+					continue NextKey
+				}
+			}
+			fmt.Fprintln(w, fmt.Sprintf(`{"upload":{"result":"Value did not match: %s"}}`, key))
+			return
+		}
+		uploadedFile, err := r.MultipartForm.File["file"][0].Open()
+		if err != nil {
+			fmt.Fprintln(w, `{"upload":{"result":"Error opening uploaded file"}}`)
+			return
+		}
+		defer uploadedFile.Close()
+		contents, err := ioutil.ReadAll(uploadedFile)
+		if err != nil {
+			panic(err)
+		}
+		if string(contents) != "THIS IS A TEST" {
+			fmt.Fprintln(w, `{"upload":{"result":"File contents are not valid"}}`)
+			return
+		}
+		fmt.Fprintln(w, `{"upload":{"result":"Success"}}`)
+	}))
+	defer ts.Close()
+	client, err := New(ts.URL, "TESTING")
+	if err != nil {
+		t.Fatalf("Error creating client: %s", err.Error())
+	}
+	client.edittoken = "ASDFASDF"
+	err = client.Upload("test.txt", strings.NewReader("THIS IS A TEST"))
+	if err != nil {
+		t.Fatalf("Error trying to upload file: %s", err)
+	}
 }

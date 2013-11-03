@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/xml"
+	"fmt"
 	"github.com/sadbox/go-mediawiki"
+	"io"
 	"io/ioutil"
-    "fmt"
-    "log"
-    "io"
-    "os"
+	"log"
+	"os"
 )
 
 var config Config
@@ -29,14 +29,13 @@ func init() {
 }
 
 func main() {
-    // CREATE A NEW API STRUCT
+	// CREATE A NEW API STRUCT
 	client, err := mediawiki.New(config.WikiURL, "MY TEST APP")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-
-    // LOGIN
+	// LOGIN
 	// The username and passsword are required
 	client.Username = config.Username
 	client.Password = config.Password
@@ -49,41 +48,48 @@ func main() {
 	}
 	defer client.Logout()
 
+	// READ A PAGE
+	page, err := client.Read("Main Page")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // READ A PAGE
-    page, err := client.Read("Main Page")
-    if err != nil {
-        log.Fatal(err)
-    }
+	fmt.Println(page.Body)
 
-    fmt.Println(page.Body)
+	// UPLOAD A FILE
+	file, err := os.Open("effective_go.pdf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = client.Upload("SomeFile.pdf", file)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	// DOWNLOAD A FILE
+	src, err := client.Download("File:SomeFile.pdf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer src.Close()
 
-    // DOWNLOAD A FILE
-    src, err := client.Download("File:SomeFile.png")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer src.Close()
+	dst, err := os.Create("/tmp/test_download")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    dst, err := os.Create("/tmp/test_download")
-    if err != nil {
-        log.Fatal(err)
-    }
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    _, err = io.Copy(dst, src)
-    if err != nil {
-        log.Fatal(err)
-    }
+	fi, err := os.Stat("/tmp/test_download")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(fi.Name(), fi.Size())
 
-    fi, err := os.Stat("/tmp/test_download")
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Println(fi.Name(), fi.Size())
-
-
-    // EDIT A PAGE
+	// EDIT A PAGE
 	editConfig := mediawiki.Values{
 		"title":   "SOME PAGE",
 		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",

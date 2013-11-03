@@ -15,11 +15,12 @@
 package mediawiki
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
-    "io"
-	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -85,20 +86,50 @@ type page struct {
 	//Counter   string
 	Length    float64
 	Edittoken string
-    Revisions []revision
-    Imageinfo []image
+	Revisions []revision
+	Imageinfo []image
 }
 
 type revision struct {
-    Body string `json:"*"`
-    User string
-    Timestamp string
-    comment string
+	Body      string `json:"*"`
+	User      string
+	Timestamp string
+	comment   string
 }
 
 type image struct {
-    Url string
-    Descriptionurl string
+	Url            string
+	Descriptionurl string
+}
+
+type mwError struct {
+	Error errorType
+}
+
+type errorType struct {
+	Code string
+	Info string
+}
+
+type uploadResponse struct {
+	Upload uploadResult
+}
+
+type uploadResult struct {
+	Result string
+}
+
+// Helper function for translating mediawiki errors in to golang errors.
+func CheckError(response []byte) error {
+	var mwerror mwError
+	err := json.Unmarshal(response, &mwerror)
+	if err != nil {
+		return nil
+	} else if mwerror.Error.Code != "" {
+		return errors.New(mwerror.Error.Code + ": " + mwerror.Error.Info)
+	} else {
+		return nil
+	}
 }
 
 // Generate a new mediawiki API struct
@@ -126,7 +157,7 @@ func New(wikiUrl, userAgent string) (*MWApi, error) {
 		url:       clientUrl,
 		client:    &client,
 		format:    "json",
-		userAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki "+userAgent,
+		userAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki " + userAgent,
 		debug:     false,
 	}, nil
 }
@@ -150,8 +181,8 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 		return nil, err
 	}
 
-	if m.debug {
-		log.Println("Post Form:", string(body))
+	if err = CheckError(body); err != nil {
+		return nil, err
 	}
 
 	return body, nil
@@ -162,43 +193,122 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 // Returns a readcloser that must be closed manually. Refer to the
 // example app for additional usage.
 func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
-    // First get the direct url of the file
-    query := Values{
-        "action": "query",
-        "prop": "imageinfo",
-        "iiprop": "url",
-        "titles": filename,
-    }
+	// First get the direct url of the file
+	query := Values{
+		"action": "query",
+		"prop":   "imageinfo",
+		"iiprop": "url",
+		"titles": filename,
+	}
 
-    body, _, err := m.API(query)
-    if err != nil {
-        return nil, err
-    }
+	body, _, err := m.API(query)
+	if err != nil {
+		return nil, err
+	}
 
-    var response Query
-    err = json.Unmarshal(body, &response)
-    if err != nil {
-        return nil, err
-    }
+	var response Query
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
 
-    var fileurl string
-    for _, page := range response.Query.Pages {
-        fileurl = page.Imageinfo[0].Url
-        break
-    }
+	var fileurl string
+	for _, page := range response.Query.Pages {
+		if len(page.Imageinfo) < 1 {
+			return nil, errors.New("No file found")
+		}
+		fileurl = page.Imageinfo[0].Url
+		break
+	}
 
-    // Then return the body of the response
-    request, err := http.NewRequest("GET", fileurl, nil)
-    if err != nil {
-        return nil, err
-    }
-    request.Header.Set("user-agent", m.userAgent)
+	// Then return the body of the response
+	request, err := http.NewRequest("GET", fileurl, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("user-agent", m.userAgent)
 
-    resp, err := m.client.Do(request)
-    if err != nil {
-        return nil, err
-    }
-    return resp.Body, nil
+	resp, err := m.client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
+}
+
+// Upload a file
+//
+// This does a simple, but more error-prone upload. Mediawiki
+// has a chunked upload version but it is only available in newer
+// versions of the API.
+//
+// Automatically retrieves an edit token if necessary.
+func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
+	if m.edittoken == "" {
+		err := m.GetEditToken()
+		if err != nil {
+			return err
+		}
+	}
+
+	query := Values{
+		"action":   "upload",
+		"filename": dstFilename,
+		"token":    m.edittoken,
+		"format":   m.format,
+	}
+
+	buffer := &bytes.Buffer{}
+	writer := multipart.NewWriter(buffer)
+
+	for key, value := range query {
+		err := writer.WriteField(key, value)
+		if err != nil {
+			return err
+		}
+	}
+
+	part, err := writer.CreateFormFile("file", dstFilename)
+	_, err = io.Copy(part, file)
+	if err != nil {
+		return err
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest("POST", m.url.String(), buffer)
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "multipart/form-data; boundary="+writer.Boundary())
+	request.Header.Set("user-agent", m.userAgent)
+
+	resp, err := m.client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if err = CheckError(body); err != nil {
+		return err
+	}
+
+	var response uploadResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return err
+	}
+	if response.Upload.Result == "Success" || response.Upload.Result == "Warning" {
+		return nil
+	} else {
+		return errors.New(response.Upload.Result)
+	}
 }
 
 // Login to the Mediawiki Website
@@ -231,11 +341,6 @@ func (m *MWApi) Login() error {
 		return err
 	}
 
-	if m.debug {
-		log.Println("Raw Response: ", string(body))
-		log.Println("Unmarshaled: ", response)
-	}
-
 	if response.Login.Result == "Success" {
 		return nil
 	} else if response.Login.Result != "NeedToken" {
@@ -253,11 +358,6 @@ func (m *MWApi) Login() error {
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
-	}
-
-	if m.debug {
-		log.Println("Raw Response: ", string(body))
-		log.Println("Unmarshaled: ", response)
 	}
 
 	if response.Login.Result == "Success" {
@@ -340,11 +440,6 @@ func (m *MWApi) Edit(values Values) error {
 		return err
 	}
 
-	if m.debug {
-		log.Println("Raw Response: ", string(body))
-		log.Println("Unmarshaled: ", response)
-	}
-
 	if response.Edit.Result == "Success" {
 		return nil
 	} else {
@@ -355,23 +450,23 @@ func (m *MWApi) Edit(values Values) error {
 // Request a wiki page and it's metadata.
 func (m *MWApi) Read(pageName string) (*revision, error) {
 	query := Values{
-        "action": "query",
-        "prop": "revisions",
-        "titles": pageName,
-        "rvlimit": "1",
-        "rvprop": "content|timestamp|user|comment",
-    }
-    body, _, err := m.API(query)
+		"action":  "query",
+		"prop":    "revisions",
+		"titles":  pageName,
+		"rvlimit": "1",
+		"rvprop":  "content|timestamp|user|comment",
+	}
+	body, _, err := m.API(query)
 
 	var response Query
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
 	}
-    for _, page := range response.Query.Pages {
-        return &page.Revisions[0], nil
-    }
-    return nil, errors.New("No revisions found")
+	for _, page := range response.Query.Pages {
+		return &page.Revisions[0], nil
+	}
+	return nil, errors.New("No revisions found")
 }
 
 // A generic interface to the Mediawiki API
