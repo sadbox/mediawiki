@@ -15,7 +15,7 @@ TODO
 ----
 - ☑ Login/Logout
 - ☑ Edit Pages
-- ☐ Read Pages
+- ☑ Read Pages
 - ☐ Upload
 - ☐ Download
 - ☑ Generic API Interface
@@ -30,15 +30,6 @@ https://github.com/jmoiron/jsonq
 For adding your own structs
 
 https://github.com/str1ngs/jflect
-
-Disclaimers
------------
-This is (very) alpha quality but does just about everything the other go mediawiki implementations do.
-
-Check the client folder for an example client app.
-
-
-Treat this repo as a WIP, it is most likely going to have multiple breaking changes as I work on it.
 
 License
 -------
