@@ -3,7 +3,7 @@
 // Please refer to the LICENSE file in the root of this
 // repository for any information.
 
-// Mediawiki API
+// go-mediawiki provides a wrapper for interacting with the Mediawiki API
 //
 // Please see http://www.mediawiki.org/wiki/API:Main_page
 // for any API specific information or refer to any of the
