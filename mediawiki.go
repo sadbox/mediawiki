@@ -67,7 +67,7 @@ type edit struct {
 }
 
 // General query response from mediawiki
-type Query struct {
+type mwQuery struct {
 	Query query
 }
 
@@ -134,7 +134,7 @@ func CheckError(response []byte) error {
 
 // Generate a new mediawiki API struct
 //
-// Example: mwapi.New("http://en.wikipedia.org/w/api.php")
+// Example: mwapi.New("http://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
 // Returns errors if the URL is invalid
 func New(wikiUrl, userAgent string) (*MWApi, error) {
 	cookiejar, err := cookiejar.New(nil)
@@ -206,7 +206,7 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	var response Query
+	var response mwQuery
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
@@ -386,7 +386,7 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	var response Query
+	var response mwQuery
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
@@ -399,8 +399,6 @@ func (m *MWApi) GetEditToken() error {
 }
 
 // Log out of the mediawiki website
-//
-// Doesn't really matter, but good form.
 func (m *MWApi) Logout() {
 	m.API(Values{"action": "logout"})
 }
@@ -458,7 +456,7 @@ func (m *MWApi) Read(pageName string) (*revision, error) {
 	}
 	body, _, err := m.API(query)
 
-	var response Query
+	var response mwQuery
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
