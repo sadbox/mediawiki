@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"github.com/sadbox/go-mediawiki"
 	"io/ioutil"
+    "fmt"
 )
 
 var config Config
@@ -43,12 +44,21 @@ func main() {
 	// This is probably not required
 	defer client.Logout()
 
+    page, err := client.Read("Main Page")
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Println(page.Body)
+
 	editConfig := mediawiki.Values{
 		"title":   "SOME PAGE",
 		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",
 		"text":    "THE ENTIRE TEXT OF THE PAGE",
 	}
+
 	err = client.Edit(editConfig)
+
 	if err != nil {
 		panic(err)
 	}

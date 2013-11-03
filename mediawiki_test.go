@@ -14,6 +14,7 @@ const (
 	firstLogin       = `{"login":{"result":"NeedToken","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	secondLogin      = `{"login":{"result":"Success","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
+    readPage = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
 )
 
 type Test struct {
@@ -162,4 +163,16 @@ func TestAPI(t *testing.T) {
 	} else {
 		t.Error("Did not get PASS back from test server when posting via API()")
 	}
+}
+
+func TestRead(t *testing.T) {
+    test := BuildUp(readPage, t)
+    defer test.TearDown()
+    page, err := test.client.Read("TESTING PAGE")
+    if err != nil {
+        t.Fatal("Unable to read page: %s", err)
+    }
+    if page.Body != "FULL PAGE TEXT" {
+        t.Error("Page content not correct")
+    }
 }

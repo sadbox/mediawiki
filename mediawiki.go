@@ -81,9 +81,17 @@ type page struct {
 	Lastrevid float64
 	// This will appear as both a string and a number... and the JSON unmarshaler
 	// will crap out if this isn't set to a string.
-	Counter   string
+	//Counter   string
 	Length    float64
 	Edittoken string
+    Revisions []revision
+}
+
+type revision struct {
+    Body string `json:"*"`
+    User string
+    Timestamp string
+    comment string
 }
 
 // Generate a new mediawiki API struct
@@ -294,8 +302,25 @@ func (m *MWApi) Edit(values Values) error {
 }
 
 // Request a wiki page and it's metadata.
-func (m *MWApi) Read(pageName string) {
-	return
+func (m *MWApi) Read(pageName string) (*revision, error) {
+	query := Values{
+        "action": "query",
+        "prop": "revisions",
+        "titles": pageName,
+        "rvlimit": "1",
+        "rvprop": "content|timestamp|user|comment",
+    }
+    body, _, err := m.API(query)
+
+	var response Query
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+    for _, page := range response.Query.Pages {
+        return &page.Revisions[0], nil
+    }
+    return nil, errors.New("No revisions found")
 }
 
 // A generic interface to the Mediawiki API
