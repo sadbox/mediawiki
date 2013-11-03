@@ -16,8 +16,8 @@ TODO
 - ☑ Login/Logout
 - ☑ Edit Pages
 - ☑ Read Pages
-- ☑ Upload
-- ☐ Download
+- ☐ Upload
+- ☑ Download
 - ☑ Generic API Interface
 - ☑ Unit tests
 
