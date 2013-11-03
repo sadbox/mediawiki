@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+    "io/ioutil"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 	secondLogin      = `{"login":{"result":"Success","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
     readPage = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
+    fileUrl = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
 )
 
 type Test struct {
@@ -30,7 +32,7 @@ func BuildUp(response string, t *testing.T) *Test {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, response)
 	}))
-	client, err := New(ts.URL)
+	client, err := New(ts.URL, "TESTING")
 	if err != nil {
 		t.Fatalf("Error in BuildUp: %s", err)
 	}
@@ -67,7 +69,7 @@ func TestLogin(t *testing.T) {
 		}
 	}))
 	defer ts.Close()
-	client, err := New(ts.URL)
+	client, err := New(ts.URL, "TESTING")
 	if err != nil {
 		t.Fatalf("Error creating client: %s", err.Error())
 	}
@@ -112,14 +114,14 @@ func TestPostForm(t *testing.T) {
 			panic(err)
 		}
 
-		if r.Header.Get("user-agent") != "go-mediawiki https://github.com/sadbox/go-mediawiki" {
+		if r.Header.Get("user-agent") != "go-mediawiki https://github.com/sadbox/go-mediawiki TESTING" {
 			fmt.Fprintln(w, "USERAGENT")
 		} else {
 			fmt.Fprintln(w, r.Form.Get("KEY"))
 		}
 	}))
 	defer ts.Close()
-	client, err := New(ts.URL)
+	client, err := New(ts.URL, "TESTING")
 	if err != nil {
 		t.Fatalf("Error creating client: %s", err.Error())
 	}
@@ -150,7 +152,7 @@ func TestAPI(t *testing.T) {
 		}
 	}))
 	defer ts.Close()
-	client, err := New(ts.URL)
+	client, err := New(ts.URL, "TESTING")
 	if err != nil {
 		t.Fatalf("Error creating client: %s", err.Error())
 	}
@@ -174,5 +176,36 @@ func TestRead(t *testing.T) {
     }
     if page.Body != "FULL PAGE TEXT" {
         t.Error("Page content not correct")
+    }
+}
+
+func TestDownload(t *testing.T) {
+    ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			panic(err)
+		}
+        if r.Method == "POST" {
+            fmt.Fprintln(w, fmt.Sprintf(fileUrl, r.Form.Get("titles")))
+        } else if r.Method == "GET" {
+            fmt.Fprintf(w, `THINGS`)
+        }
+    }))
+    defer ts.Close()
+    client, err := New(ts.URL, "TESTING")
+    if err != nil {
+        t.Fatalf("Error creating client: %s", err.Error())
+    }
+    file, err := client.Download(ts.URL)
+    if err != nil {
+        t.Fatalf("Error downloading file: %s", err.Error())
+    }
+    defer file.Close()
+    returned, err := ioutil.ReadAll(file)
+    if err != nil {
+        t.Fatalf("Error reading downloaded file: %s", err.Error())
+    }
+    if string(returned) != "THINGS" {
+        t.Fatalf("Returned file was not correct")
     }
 }

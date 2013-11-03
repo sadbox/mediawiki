@@ -16,10 +16,10 @@ TODO
 - ☑ Login/Logout
 - ☑ Edit Pages
 - ☑ Read Pages
-- ☐ Upload
+- ☑ Upload
 - ☐ Download
 - ☑ Generic API Interface
-- ☑ Unit tests (partly?)
+- ☑ Unit tests
 
 Useful Links
 ------------

@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+    "io"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -30,7 +31,7 @@ type MWApi struct {
 	Username  string
 	Password  string
 	Domain    string
-	UserAgent string
+	userAgent string
 	debug     bool
 	url       *url.URL
 	client    *http.Client
@@ -85,6 +86,7 @@ type page struct {
 	Length    float64
 	Edittoken string
     Revisions []revision
+    Imageinfo []image
 }
 
 type revision struct {
@@ -94,11 +96,16 @@ type revision struct {
     comment string
 }
 
+type image struct {
+    Url string
+    Descriptionurl string
+}
+
 // Generate a new mediawiki API struct
 //
 // Example: mwapi.New("http://en.wikipedia.org/w/api.php")
 // Returns errors if the URL is invalid
-func New(wikiUrl string) (*MWApi, error) {
+func New(wikiUrl, userAgent string) (*MWApi, error) {
 	cookiejar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -119,7 +126,7 @@ func New(wikiUrl string) (*MWApi, error) {
 		url:       clientUrl,
 		client:    &client,
 		format:    "json",
-		UserAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki",
+		userAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki "+userAgent,
 		debug:     false,
 	}, nil
 }
@@ -131,7 +138,7 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	request.Header.Set("user-agent", m.UserAgent)
+	request.Header.Set("user-agent", m.userAgent)
 	resp, err := m.client.Do(request)
 	if err != nil {
 		return nil, err
@@ -148,6 +155,50 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+// Download a file.
+//
+// Returns a readcloser that must be closed manually. Refer to the
+// example app for additional usage.
+func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
+    // First get the direct url of the file
+    query := Values{
+        "action": "query",
+        "prop": "imageinfo",
+        "iiprop": "url",
+        "titles": filename,
+    }
+
+    body, _, err := m.API(query)
+    if err != nil {
+        return nil, err
+    }
+
+    var response Query
+    err = json.Unmarshal(body, &response)
+    if err != nil {
+        return nil, err
+    }
+
+    var fileurl string
+    for _, page := range response.Query.Pages {
+        fileurl = page.Imageinfo[0].Url
+        break
+    }
+
+    // Then return the body of the response
+    request, err := http.NewRequest("GET", fileurl, nil)
+    if err != nil {
+        return nil, err
+    }
+    request.Header.Set("user-agent", m.userAgent)
+
+    resp, err := m.client.Do(request)
+    if err != nil {
+        return nil, err
+    }
+    return resp.Body, nil
 }
 
 // Login to the Mediawiki Website
