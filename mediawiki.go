@@ -282,7 +282,7 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	request.Header.Set("Content-Type", "multipart/form-data; boundary="+writer.Boundary())
+	request.Header.Set("Content-Type", writer.FormDataContentType())
 	request.Header.Set("user-agent", m.userAgent)
 
 	resp, err := m.client.Do(request)
