@@ -1,4 +1,4 @@
-go-mediawiki [![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest)
+go-mediawiki [![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest) [![GoDoc](https://godoc.org/github.com/sadbox/go-mediawiki?status.png)](http://godoc.org/github.com/sadbox/go-mediawiki)
 ========
 A MediaWiki API wrapper for [Go](http://golang.org/)
 
