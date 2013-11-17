@@ -83,7 +83,7 @@ type page struct {
 	Lastrevid float64
 	// This will appear as both a string and a number... and the JSON unmarshaler
 	// will crap out if this isn't set to a string.
-	Counter   int `json:",omitempty"`
+	//Counter   int `json:",omitempty"`
 	Length    int
 	Edittoken string
 	Revisions []revision
