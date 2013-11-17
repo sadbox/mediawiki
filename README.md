@@ -1,7 +1,4 @@
-go-mediawiki 
-[![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest) 
-[![GoDoc](https://godoc.org/github.com/sadbox/go-mediawiki?status.png)](http://godoc.org/github.com/sadbox/go-mediawiki)
-[![Coverage Status](https://coveralls.io/repos/sadbox/go-mediawiki/badge.png?branch=master)](https://coveralls.io/r/sadbox/go-mediawiki?branch=master)
+go-mediawiki [![Build Status](https://drone.io/github.com/sadbox/go-mediawiki/status.png)](https://drone.io/github.com/sadbox/go-mediawiki/latest) [![GoDoc](https://godoc.org/github.com/sadbox/go-mediawiki?status.png)](http://godoc.org/github.com/sadbox/go-mediawiki) [![Coverage Status](https://coveralls.io/repos/sadbox/go-mediawiki/badge.png?branch=master)](https://coveralls.io/r/sadbox/go-mediawiki?branch=master)
 ========
 A MediaWiki API wrapper for [Go](http://golang.org/)
 
