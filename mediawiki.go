@@ -77,14 +77,14 @@ type query struct {
 
 type page struct {
 	Pageid    int
-	Ns        float64
+	Ns        int
 	Title     string
 	Touched   string
 	Lastrevid float64
 	// This will appear as both a string and a number... and the JSON unmarshaler
 	// will crap out if this isn't set to a string.
-	//Counter   string
-	Length    float64
+	//Counter   int `json:",omitempty"`
+	Length    int
 	Edittoken string
 	Revisions []revision
 	Imageinfo []image
