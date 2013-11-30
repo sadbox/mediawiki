@@ -452,12 +452,9 @@ func (m *MWApi) Read(pageName string) (*mwQuery, error) {
 
 // A generic interface to the Mediawiki API
 // Refer to the mediawiki API reference for any information regarding
-// what to pass to this function
+// what to pass to this function.
 //
 // This is used by all internal functions to interact with the API
-//
-// The second return is simply the json data decoded in to an empty interface
-// that can be used by something like https://github.com/jmoiron/jsonq
 func (m *MWApi) API(values ...map[string]string) ([]byte, error) {
 	query := m.url.Query()
 	for _, valuemap := range values {
