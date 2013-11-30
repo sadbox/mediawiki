@@ -64,18 +64,25 @@ type outerEdit struct {
 // General query response from mediawiki
 type mwQuery struct {
 	Query struct {
+		// The json response for this part of the struct is dumb.
+		// It will return something like { '23': { 'pageid':....
+		// So then the you to do this craziness with a map... but
+		// basically means you're forced to extract your pages with
+		// range instead of something sane. Sorry!
 		Pages map[string]struct {
 			Pageid    int
 			Ns        int
 			Title     string
 			Touched   string
-			Lastrevid float64
-			// This will appear as both a string and a number... and the JSON unmarshaler
-			// will crap out if this isn't set to a string.
+			Lastrevid int
+			// Mediawiki will return '' for zero, this makes me sad.
+			// If for some reason you need this value you'll have to
+			// do some type assertion sillyness.
 			Counter   interface{}
 			Length    int
 			Edittoken string
 			Revisions []struct {
+				// Take note, mediawiki literally returns { '*':
 				Body      string `json:"*"`
 				User      string
 				Timestamp string
