@@ -107,7 +107,7 @@ type uploadResponse struct {
 }
 
 // Helper function for translating mediawiki errors in to golang errors.
-func CheckError(response []byte) error {
+func checkError(response []byte) error {
 	var mwerror mwError
 	err := json.Unmarshal(response, &mwerror)
 	if err != nil {
@@ -167,7 +167,7 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 		return nil, err
 	}
 
-	if err = CheckError(body); err != nil {
+	if err = checkError(body); err != nil {
 		return nil, err
 	}
 
@@ -281,7 +281,7 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 		return err
 	}
 
-	if err = CheckError(body); err != nil {
+	if err = checkError(body); err != nil {
 		return err
 	}
 
