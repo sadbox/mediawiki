@@ -33,7 +33,6 @@ type MWApi struct {
 	Password  string
 	Domain    string
 	userAgent string
-	debug     bool
 	url       *url.URL
 	client    *http.Client
 	format    string
@@ -142,7 +141,6 @@ func New(wikiUrl, userAgent string) (*MWApi, error) {
 		client:    &client,
 		format:    "json",
 		userAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki " + userAgent,
-		debug:     false,
 	}, nil
 }
 
