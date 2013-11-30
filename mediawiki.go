@@ -187,7 +187,7 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 		"titles": filename,
 	}
 
-	body, _, err := m.API(query)
+	body, err := m.API(query)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +316,7 @@ func (m *MWApi) Login() error {
 		query["lgdomain"] = m.Domain
 	}
 
-	body, _, err := m.API(query)
+	body, err := m.API(query)
 	if err != nil {
 		return err
 	}
@@ -336,7 +336,7 @@ func (m *MWApi) Login() error {
 	// Need to use the login token
 	query["lgtoken"] = response.Login.Token
 
-	body, _, err = m.API(query)
+	body, err = m.API(query)
 	if err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func (m *MWApi) GetEditToken() error {
 		"titles":  "Main Page",
 	}
 
-	body, _, err := m.API(query)
+	body, err := m.API(query)
 	if err != nil {
 		return err
 	}
@@ -413,7 +413,7 @@ func (m *MWApi) Edit(values map[string]string) error {
 		"action": "edit",
 		"token":  m.edittoken,
 	}
-	body, _, err := m.API(query, values)
+	body, err := m.API(query, values)
 	if err != nil {
 		return err
 	}
@@ -440,7 +440,7 @@ func (m *MWApi) Read(pageName string) (*mwQuery, error) {
 		"rvlimit": "1",
 		"rvprop":  "content|timestamp|user|comment",
 	}
-	body, _, err := m.API(query)
+	body, err := m.API(query)
 
 	var response mwQuery
 	err = json.Unmarshal(body, &response)
@@ -458,7 +458,7 @@ func (m *MWApi) Read(pageName string) (*mwQuery, error) {
 //
 // The second return is simply the json data decoded in to an empty interface
 // that can be used by something like https://github.com/jmoiron/jsonq
-func (m *MWApi) API(values ...map[string]string) ([]byte, interface{}, error) {
+func (m *MWApi) API(values ...map[string]string) ([]byte, error) {
 	query := m.url.Query()
 	for _, valuemap := range values {
 		for key, value := range valuemap {
@@ -468,12 +468,7 @@ func (m *MWApi) API(values ...map[string]string) ([]byte, interface{}, error) {
 	query.Set("format", m.format)
 	body, err := m.postForm(query)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var unmarshalto interface{}
-	err = json.Unmarshal(body, &unmarshalto)
-	if err != nil {
-		return nil, nil, err
-	}
-	return body, unmarshalto, nil
+	return body, nil
 }

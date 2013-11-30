@@ -21,16 +21,6 @@ TODO
 - ☑ Generic API Interface
 - ☑ Unit tests
 
-Useful Links
-------------
-For easy handling of items that you get back from client.API()
-
-https://github.com/jmoiron/jsonq
-
-For adding your own structs
-
-https://github.com/str1ngs/jflect
-
 License
 -------
 This software is licensed under the MIT license. Pull requests and issues are welcome.
