@@ -45,78 +45,62 @@ type Values map[string]string
 
 // Unmarshal login data...
 type outerLogin struct {
-	Login loginResponse
-}
-
-type loginResponse struct {
-	Result string
-	Token  string
+	Login struct {
+		Result string
+		Token  string
+	}
 }
 
 // Unmarshall response from page edits...
 type outerEdit struct {
-	Edit edit
-}
-
-type edit struct {
-	Result   string
-	PageId   int
-	Title    string
-	OldRevId int
-	NewRevId int
+	Edit struct {
+		Result   string
+		PageId   int
+		Title    string
+		OldRevId int
+		NewRevId int
+	}
 }
 
 // General query response from mediawiki
 type mwQuery struct {
-	Query query
-}
-
-type query struct {
-	Pages map[string]page
-}
-
-type page struct {
-	Pageid    int
-	Ns        int
-	Title     string
-	Touched   string
-	Lastrevid float64
-	// This will appear as both a string and a number... and the JSON unmarshaler
-	// will crap out if this isn't set to a string.
-	//Counter   int `json:",omitempty"`
-	Length    int
-	Edittoken string
-	Revisions []revision
-	Imageinfo []image
-}
-
-type revision struct {
-	Body      string `json:"*"`
-	User      string
-	Timestamp string
-	comment   string
-}
-
-type image struct {
-	Url            string
-	Descriptionurl string
+	Query struct {
+		Pages map[string]struct {
+			Pageid    int
+			Ns        int
+			Title     string
+			Touched   string
+			Lastrevid float64
+			// This will appear as both a string and a number... and the JSON unmarshaler
+			// will crap out if this isn't set to a string.
+			Counter   interface{}
+			Length    int
+			Edittoken string
+			Revisions []struct {
+				Body      string `json:"*"`
+				User      string
+				Timestamp string
+				comment   string
+			}
+			Imageinfo []struct {
+				Url            string
+				Descriptionurl string
+			}
+		}
+	}
 }
 
 type mwError struct {
-	Error errorType
-}
-
-type errorType struct {
-	Code string
-	Info string
+	Error struct {
+		Code string
+		Info string
+	}
 }
 
 type uploadResponse struct {
-	Upload uploadResult
-}
-
-type uploadResult struct {
-	Result string
+	Upload struct {
+		Result string
+	}
 }
 
 // Helper function for translating mediawiki errors in to golang errors.
@@ -446,7 +430,7 @@ func (m *MWApi) Edit(values Values) error {
 }
 
 // Request a wiki page and it's metadata.
-func (m *MWApi) Read(pageName string) (*revision, error) {
+func (m *MWApi) Read(pageName string) (*mwQuery, error) {
 	query := Values{
 		"action":  "query",
 		"prop":    "revisions",
@@ -461,10 +445,7 @@ func (m *MWApi) Read(pageName string) (*revision, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, page := range response.Query.Pages {
-		return &page.Revisions[0], nil
-	}
-	return nil, errors.New("No revisions found")
+	return &response, nil
 }
 
 // A generic interface to the Mediawiki API
