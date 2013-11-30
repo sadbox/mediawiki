@@ -156,7 +156,7 @@ func TestAPI(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %s", err.Error())
 	}
-	body, _, err := client.API(Values{"KEY": "VALUE", "OTHER KEY": "OTHER VALUE"})
+	body, _, err := client.API(map[string]string{"KEY": "VALUE", "OTHER KEY": "OTHER VALUE"})
 	if err != nil {
 		t.Fatalf("API() returned a non-nil error: %s", err.Error())
 	}

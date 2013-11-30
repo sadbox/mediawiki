@@ -39,9 +39,6 @@ type MWApi struct {
 	edittoken string
 }
 
-// This is used for passing data to the mediawiki API via key=value in a POST
-type Values map[string]string
-
 // Unmarshal login data...
 type outerLogin struct {
 	Login struct {
@@ -183,7 +180,7 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 // example app for additional usage.
 func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 	// First get the direct url of the file
-	query := Values{
+	query := map[string]string{
 		"action": "query",
 		"prop":   "imageinfo",
 		"iiprop": "url",
@@ -239,7 +236,7 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 		}
 	}
 
-	query := Values{
+	query := map[string]string{
 		"action":   "upload",
 		"filename": dstFilename,
 		"token":    m.edittoken,
@@ -309,7 +306,7 @@ func (m *MWApi) Login() error {
 		return errors.New("Username or password not set.")
 	}
 
-	query := Values{
+	query := map[string]string{
 		"action":     "login",
 		"lgname":     m.Username,
 		"lgpassword": m.Password,
@@ -364,7 +361,7 @@ func (m *MWApi) Login() error {
 // but it is available if you want to make direct
 // calls to API().
 func (m *MWApi) GetEditToken() error {
-	query := Values{
+	query := map[string]string{
 		"action":  "query",
 		"prop":    "info|revisions",
 		"intoken": "edit",
@@ -389,7 +386,7 @@ func (m *MWApi) GetEditToken() error {
 
 // Log out of the mediawiki website
 func (m *MWApi) Logout() {
-	m.API(Values{"action": "logout"})
+	m.API(map[string]string{"action": "logout"})
 }
 
 // Edit a page
@@ -399,20 +396,20 @@ func (m *MWApi) Logout() {
 //
 // Example:
 //
-//  editConfig := mediawiki.Values{
+//  editConfig := map[string]string{
 //      "title":   "SOME PAGE",
 //      "summary": "THIS IS WHAT SHOWS UP IN THE LOG",
 //      "text":    "THE ENTIRE TEXT OF THE PAGE",
 //  }
 //  err = client.Edit(editConfig)
-func (m *MWApi) Edit(values Values) error {
+func (m *MWApi) Edit(values map[string]string) error {
 	if m.edittoken == "" {
 		err := m.GetEditToken()
 		if err != nil {
 			return err
 		}
 	}
-	query := Values{
+	query := map[string]string{
 		"action": "edit",
 		"token":  m.edittoken,
 	}
@@ -436,7 +433,7 @@ func (m *MWApi) Edit(values Values) error {
 
 // Request a wiki page and it's metadata.
 func (m *MWApi) Read(pageName string) (*mwQuery, error) {
-	query := Values{
+	query := map[string]string{
 		"action":  "query",
 		"prop":    "revisions",
 		"titles":  pageName,
@@ -461,7 +458,7 @@ func (m *MWApi) Read(pageName string) (*mwQuery, error) {
 //
 // The second return is simply the json data decoded in to an empty interface
 // that can be used by something like https://github.com/jmoiron/jsonq
-func (m *MWApi) API(values ...Values) ([]byte, interface{}, error) {
+func (m *MWApi) API(values ...map[string]string) ([]byte, interface{}, error) {
 	query := m.url.Query()
 	for _, valuemap := range values {
 		for key, value := range valuemap {
