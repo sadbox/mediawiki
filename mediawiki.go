@@ -59,7 +59,7 @@ type outerEdit struct {
 }
 
 // General query response from mediawiki
-type mwQuery struct {
+type Response struct {
 	Query struct {
 		// The json response for this part of the struct is dumb.
 		// It will return something like { '23': { 'pageid':....
@@ -192,7 +192,7 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	var response mwQuery
+	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
@@ -372,7 +372,7 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	var response mwQuery
+	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
@@ -432,7 +432,7 @@ func (m *MWApi) Edit(values map[string]string) error {
 }
 
 // Request a wiki page and it's metadata.
-func (m *MWApi) Read(pageName string) (*mwQuery, error) {
+func (m *MWApi) Read(pageName string) (*Response, error) {
 	query := map[string]string{
 		"action":  "query",
 		"prop":    "revisions",
@@ -442,7 +442,7 @@ func (m *MWApi) Read(pageName string) (*mwQuery, error) {
 	}
 	body, err := m.API(query)
 
-	var response mwQuery
+	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
