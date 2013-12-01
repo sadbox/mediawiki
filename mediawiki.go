@@ -58,12 +58,16 @@ type outerEdit struct {
 	}
 }
 
-// General query response from mediawiki
+// Response is a struct used for unmarshaling the mediawiki JSON
+// response to.
+//
+// It should be particularly useful when API needs to be called
+// directly.
 type Response struct {
 	Query struct {
 		// The json response for this part of the struct is dumb.
-		// It will return something like { '23': { 'pageid':....
-		// So then the you to do this craziness with a map... but
+		// It will return something like { '23': { 'pageid': 23 ...
+		// So then the you to do this craziness with a map... and that
 		// basically means you're forced to extract your pages with
 		// range instead of something sane. Sorry!
 		Pages map[string]struct {
@@ -83,7 +87,7 @@ type Response struct {
 				Body      string `json:"*"`
 				User      string
 				Timestamp string
-				comment   string
+				Comment   string
 			}
 			Imageinfo []struct {
 				Url            string
