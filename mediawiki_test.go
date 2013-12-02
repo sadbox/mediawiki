@@ -17,6 +17,9 @@ const (
 	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	readPage         = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
 	fileUrl          = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
+	mwerror          = `{"servedby":"mw1123","error":{"code":"unknown_action","info":"Unrecognized value for parameter 'action': blah"}}`
+	editsuccess      = `{"Edit":{"result":"Success","pageid":12,"title":"Talk:Main Page","oldrevid":465,"newrevid":471}}`
+	editfailure      = `{"Edit":{"result":"Failure!","pageid":12,"title":"Talk:Main Page","oldrevid":465,"newrevid":471}}`
 )
 
 type Test struct {
@@ -260,5 +263,43 @@ func TestUpload(t *testing.T) {
 	err = client.Upload("test.txt", strings.NewReader("THIS IS A TEST"))
 	if err != nil {
 		t.Fatalf("Error trying to upload file: %s", err)
+	}
+}
+
+func TestMWError(t *testing.T) {
+	test := BuildUp(mwerror, t)
+	defer test.TearDown()
+	_, err := test.client.Read("DOESN'T MATTER")
+	if err != nil {
+		t.Log("Properly recieved error:", err)
+	} else {
+		t.Fatalf("Mediawiki error did not get translated to a go error")
+	}
+}
+
+func TestEditAutoToken(t *testing.T) {
+	test := BuildUp(editTokenReponse, t)
+	defer test.TearDown()
+	test.client.Edit(map[string]string{"thing": "OTHER THING"})
+	if test.client.edittoken == "" {
+		t.Fatalf("Edit token did not get set properly")
+	}
+}
+
+func TestEditSuccess(t *testing.T) {
+	test := BuildUp(editsuccess, t)
+	defer test.TearDown()
+	err := test.client.Edit(map[string]string{"title": "somepage"})
+	if err != nil {
+		t.Fatal("Did not get non-error response back", err)
+	}
+}
+
+func TestEditFail(t *testing.T) {
+	test := BuildUp(editfailure, t)
+	defer test.TearDown()
+	err := test.client.Edit(map[string]string{"title": "somepage"})
+	if err == nil {
+		t.Fatal("Did not get non-error response back", err)
 	}
 }

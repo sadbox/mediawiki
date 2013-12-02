@@ -170,7 +170,6 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if err = checkError(body); err != nil {
 		return nil, err
 	}
@@ -445,6 +444,9 @@ func (m *MWApi) Read(pageName string) (*Response, error) {
 		"rvprop":  "content|timestamp|user|comment",
 	}
 	body, err := m.API(query)
+	if err != nil {
+		return nil, err
+	}
 
 	var response Response
 	err = json.Unmarshal(body, &response)
