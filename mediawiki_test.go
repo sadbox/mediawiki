@@ -17,6 +17,7 @@ const (
 	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	readPage         = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
 	fileUrl          = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
+	fileUrlFailed    = `{"query":{"pages":{"544100":{"pageid":544100,"ns":0,"title":"Asdf"}}}}`
 	mwerror          = `{"servedby":"mw1123","error":{"code":"unknown_action","info":"Unrecognized value for parameter 'action': blah"}}`
 	editsuccess      = `{"Edit":{"result":"Success","pageid":12,"title":"Talk:Main Page","oldrevid":465,"newrevid":471}}`
 	editfailure      = `{"Edit":{"result":"Failure!","pageid":12,"title":"Talk:Main Page","oldrevid":465,"newrevid":471}}`
@@ -78,11 +79,40 @@ func TestLogin(t *testing.T) {
 	}
 	client.Password = "asdf"
 	client.Username = "asdf"
+	client.Domain = "asdf"
 	err = client.Login()
 	if err != nil {
 		t.Error("Client failed to login: %s", err.Error())
 	} else {
 		t.Log("Client logged in successfully.")
+	}
+}
+
+func TestLoginFailedSecondary(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			panic(err)
+		}
+		if r.Form.Get("lgtoken") == "" {
+			fmt.Fprintln(w, firstLogin)
+		} else {
+			fmt.Fprintln(w, failedLogin)
+		}
+	}))
+	defer ts.Close()
+	client, err := New(ts.URL, "TESTING")
+	if err != nil {
+		t.Fatalf("Error creating client: %s", err.Error())
+	}
+	client.Password = "asdf"
+	client.Username = "asdf"
+	client.Domain = "asdf"
+	err = client.Login()
+	if err == nil {
+		t.Error("Client failed to login: %s (BUT THIS IS GOOD!)", err.Error())
+	} else {
+		t.Log("Client logged in successfully. (BUT THIS IS BAD!)")
 	}
 }
 
@@ -215,6 +245,31 @@ func TestDownload(t *testing.T) {
 	}
 }
 
+func TestDownloadNoFiles(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			panic(err)
+		}
+		if r.Method == "POST" {
+			fmt.Fprintln(w, fileUrlFailed)
+		} else if r.Method == "GET" {
+			fmt.Fprintf(w, `THINGS`)
+		}
+	}))
+	defer ts.Close()
+	client, err := New(ts.URL, "TESTING")
+	if err != nil {
+		t.Fatalf("Error creating client: %s", err)
+	}
+	_, err = client.Download(ts.URL)
+	if err != nil {
+		t.Log("Successfully returned error when no files were found", err)
+	} else {
+		t.Fatal("No error return when no files were found", err)
+	}
+}
+
 func TestUpload(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(int64(10000))
@@ -263,6 +318,27 @@ func TestUpload(t *testing.T) {
 	err = client.Upload("test.txt", strings.NewReader("THIS IS A TEST"))
 	if err != nil {
 		t.Fatalf("Error trying to upload file: %s", err)
+	}
+}
+
+func TestUploadAutoToken(t *testing.T) {
+	test := BuildUp(editTokenReponse, t)
+	defer test.TearDown()
+	test.client.Upload("stuff", strings.NewReader("stuff"))
+	if test.client.edittoken == "" {
+		t.Fatalf("Edit token did not get set properly")
+	}
+}
+
+func TestUploadFailResponse(t *testing.T) {
+	test := BuildUp(`{"upload":{"result":"THIS SHOULD BE AN ERROR"}}`, t)
+	defer test.TearDown()
+	test.client.edittoken = "ASDF"
+	err := test.client.Upload("stuff", strings.NewReader("stuff"))
+	if err == nil {
+		t.Fatal("Did not generate error when upload returned failed result", err)
+	} else {
+		t.Log("Successfully generated error from failed upload", err)
 	}
 }
 
