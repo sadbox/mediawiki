@@ -29,14 +29,17 @@ import (
 
 // The main mediawiki API struct, this is generated via mwapi.New()
 type MWApi struct {
-	Username  string
-	Password  string
-	Domain    string
-	userAgent string
-	url       *url.URL
-	client    *http.Client
-	format    string
-	edittoken string
+	Username      string
+	Password      string
+	Domain        string
+	userAgent     string
+	url           *url.URL
+	client        *http.Client
+	format        string
+	edittoken     string
+	UseBasicAuth  bool
+	BasicAuthUser string
+	BasicAuthPass string
 }
 
 // Unmarshal login data...
@@ -160,6 +163,9 @@ func (m *MWApi) postForm(query url.Values) ([]byte, error) {
 	}
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	request.Header.Set("user-agent", m.userAgent)
+	if m.UseBasicAuth {
+		request.SetBasicAuth(m.BasicAuthUser, m.BasicAuthPass)
+	}
 	resp, err := m.client.Do(request)
 	if err != nil {
 		return nil, err
@@ -216,6 +222,9 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	request.Header.Set("user-agent", m.userAgent)
+	if m.UseBasicAuth {
+		request.SetBasicAuth(m.BasicAuthUser, m.BasicAuthPass)
+	}
 
 	resp, err := m.client.Do(request)
 	if err != nil {
@@ -273,6 +282,9 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	}
 	request.Header.Set("Content-Type", writer.FormDataContentType())
 	request.Header.Set("user-agent", m.userAgent)
+	if m.UseBasicAuth {
+		request.SetBasicAuth(m.BasicAuthUser, m.BasicAuthPass)
+	}
 
 	resp, err := m.client.Do(request)
 	if err != nil {
