@@ -110,9 +110,9 @@ func TestLoginFailedSecondary(t *testing.T) {
 	client.Domain = "asdf"
 	err = client.Login()
 	if err == nil {
-		t.Error("Client failed to login: %s (BUT THIS IS GOOD!)", err)
+		t.Error("Client logged in successfully. (BUT THIS IS BAD!)")
 	} else {
-		t.Log("Client logged in successfully. (BUT THIS IS BAD!)")
+		t.Log("Client failed to login: %s (BUT THIS IS GOOD!)", err)
 	}
 }
 
@@ -377,5 +377,29 @@ func TestEditFail(t *testing.T) {
 	err := test.client.Edit(map[string]string{"title": "somepage"})
 	if err == nil {
 		t.Fatal("Did not get non-error response back", err)
+	}
+}
+
+func TestBasicAuth(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Basic Zm9vOmJhcg==" {
+			t.Fatalf("Did not recieve correct basic auth header: %s", r.Header.Get(r.Header.Get("Authorization")))
+		}
+	}))
+	defer ts.Close()
+	client, err := New(ts.URL, "TESTING")
+	if err != nil {
+		t.Fatalf("Error creating client: %s", err.Error())
+	}
+
+	client.UseBasicAuth = true
+	client.BasicAuthUser = "foo"
+	client.BasicAuthPass = "bar"
+
+	t.Log(client)
+
+	_, err = client.API()
+	if err != nil {
+		t.Fatalf("API() returned a non-nil error: %s", err.Error())
 	}
 }
