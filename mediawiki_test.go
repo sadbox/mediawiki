@@ -82,7 +82,7 @@ func TestLogin(t *testing.T) {
 	client.Domain = "asdf"
 	err = client.Login()
 	if err != nil {
-		t.Error("Client failed to login: %s", err.Error())
+		t.Error("Client failed to login: %s", err)
 	} else {
 		t.Log("Client logged in successfully.")
 	}
@@ -103,14 +103,14 @@ func TestLoginFailedSecondary(t *testing.T) {
 	defer ts.Close()
 	client, err := New(ts.URL, "TESTING")
 	if err != nil {
-		t.Fatalf("Error creating client: %s", err.Error())
+		t.Fatalf("Error creating client: %s", err)
 	}
 	client.Password = "asdf"
 	client.Username = "asdf"
 	client.Domain = "asdf"
 	err = client.Login()
 	if err == nil {
-		t.Error("Client failed to login: %s (BUT THIS IS GOOD!)", err.Error())
+		t.Error("Client failed to login: %s (BUT THIS IS GOOD!)", err)
 	} else {
 		t.Log("Client logged in successfully. (BUT THIS IS BAD!)")
 	}
