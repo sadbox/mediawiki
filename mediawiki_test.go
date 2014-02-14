@@ -207,10 +207,8 @@ func TestRead(t *testing.T) {
 	if err != nil {
 		t.Fatal("Unable to read page: %s", err)
 	}
-	for _, page := range query.Query.Pages {
-		if page.Revisions[0].Body != "FULL PAGE TEXT" {
-			t.Error("Page content not correct")
-		}
+	if query.Query.Pages[0].Revisions[0].Body != "FULL PAGE TEXT" {
+		t.Error("Page content not correct")
 	}
 }
 

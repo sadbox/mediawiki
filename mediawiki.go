@@ -67,24 +67,24 @@ type outerEdit struct {
 // It should be particularly useful when API needs to be called
 // directly.
 type Response struct {
-	Query struct {
-		// The json response for this part of the struct is dumb.
-		// It will return something like { '23': { 'pageid': 23 ...
-		//
-		// As a workaround you can use GenPageList which will create
-		// a list of pages from the map.
-		Pages    map[string]Page
-		PageList []Page
-	}
+	Query Query
 }
 
-// GenPageList generates PageList from Pages to work around the sillyness in
-// the mediawiki API.
-func (r *Response) GenPageList() {
-	r.Query.PageList = []Page{}
-	for _, page := range r.Query.Pages {
-		r.Query.PageList = append(r.Query.PageList, page)
+type Query struct {
+	Pages []Page
+}
+
+func (q *Query) UnmarshalJSON(b []byte) error {
+	tempData := struct{ Pages map[string]Page }{make(map[string]Page)}
+	err := json.Unmarshal(b, &tempData)
+	if err != nil {
+		return err
 	}
+	q.Pages = []Page{}
+	for _, page := range tempData.Pages {
+		q.Pages = append(q.Pages, page)
+	}
+	return nil
 }
 
 type Page struct {
@@ -133,9 +133,8 @@ func checkError(response []byte) error {
 		return nil
 	} else if mwerror.Error.Code != "" {
 		return errors.New(mwerror.Error.Code + ": " + mwerror.Error.Info)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // New generates a new mediawiki API (MWApi) struct.
@@ -218,12 +217,11 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	response.GenPageList()
 
-	if len(response.Query.PageList) < 1 {
+	if len(response.Query.Pages) < 1 {
 		return nil, errors.New("no file found")
 	}
-	page := response.Query.PageList[0]
+	page := response.Query.Pages[0]
 	if len(page.Imageinfo) < 1 {
 		return nil, errors.New("no file found")
 	}
@@ -403,17 +401,16 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	response.GenPageList()
-	if len(response.Query.PageList) < 1 {
+	if len(response.Query.Pages) < 1 {
 		return errors.New("no pages returned for edittoken query")
 	}
-	m.edittoken = response.Query.PageList[0].Edittoken
+	m.edittoken = response.Query.Pages[0].Edittoken
 	return nil
 }
 
 // Logout of the mediawiki website
 func (m *MWApi) Logout() {
-	m.API(map[string]string{"action": "logout"})
+	_, _ = m.API(map[string]string{"action": "logout"})
 }
 
 // Edit a page
