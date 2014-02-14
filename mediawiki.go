@@ -3,7 +3,7 @@
 // Please refer to the LICENSE file in the root of this
 // repository for any information.
 
-// go-mediawiki provides a wrapper for interacting with the Mediawiki API
+// Package mediawiki provides a wrapper for interacting with the Mediawiki API
 //
 // Please see http://www.mediawiki.org/wiki/API:Main_page
 // for any API specific information or refer to any of the
@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-// The main mediawiki API struct, this is generated via mwapi.New()
+// MWApi is used to interact with the mediawiki server.
 type MWApi struct {
 	Username      string
 	Password      string
@@ -70,33 +70,45 @@ type Response struct {
 	Query struct {
 		// The json response for this part of the struct is dumb.
 		// It will return something like { '23': { 'pageid': 23 ...
-		// So then the you to do this craziness with a map... and that
-		// basically means you're forced to extract your pages with
-		// range instead of something sane. Sorry!
-		Pages map[string]struct {
-			Pageid    int
-			Ns        int
-			Title     string
-			Touched   string
-			Lastrevid int
-			// Mediawiki will return '' for zero, this makes me sad.
-			// If for some reason you need this value you'll have to
-			// do some type assertion sillyness.
-			Counter   interface{}
-			Length    int
-			Edittoken string
-			Revisions []struct {
-				// Take note, mediawiki literally returns { '*':
-				Body      string `json:"*"`
-				User      string
-				Timestamp string
-				Comment   string
-			}
-			Imageinfo []struct {
-				Url            string
-				Descriptionurl string
-			}
-		}
+		//
+		// As a workaround you can use GenPageList which will create
+		// a list of pages from the map.
+		Pages    map[string]Page
+		PageList []Page
+	}
+}
+
+// GenPageList generates PageList from Pages to work around the sillyness in
+// the mediawiki API.
+func (r *Response) GenPageList() {
+	r.Query.PageList = []Page{}
+	for _, page := range r.Query.Pages {
+		r.Query.PageList = append(r.Query.PageList, page)
+	}
+}
+
+type Page struct {
+	Pageid    int
+	Ns        int
+	Title     string
+	Touched   string
+	Lastrevid int
+	// Mediawiki will return '' for zero, this makes me sad.
+	// If for some reason you need this value you'll have to
+	// do some type assertion sillyness.
+	Counter   interface{}
+	Length    int
+	Edittoken string
+	Revisions []struct {
+		// Take note, mediawiki literally returns { '*':
+		Body      string `json:"*"`
+		User      string
+		Timestamp string
+		Comment   string
+	}
+	Imageinfo []struct {
+		Url            string
+		Descriptionurl string
 	}
 }
 
@@ -126,11 +138,11 @@ func checkError(response []byte) error {
 	}
 }
 
-// Generate a new mediawiki API struct
+// New generates a new mediawiki API (MWApi) struct.
 //
 // Example: mwapi.New("http://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
 // Returns errors if the URL is invalid
-func New(wikiUrl, userAgent string) (*MWApi, error) {
+func New(wikiURL, userAgent string) (*MWApi, error) {
 	cookiejar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -142,13 +154,13 @@ func New(wikiUrl, userAgent string) (*MWApi, error) {
 		Jar:           cookiejar,
 	}
 
-	clientUrl, err := url.Parse(wikiUrl)
+	clientURL, err := url.Parse(wikiURL)
 	if err != nil {
 		return nil, err
 	}
 
 	return &MWApi{
-		url:       clientUrl,
+		url:       clientURL,
 		client:    &client,
 		format:    "json",
 		userAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki " + userAgent,
@@ -206,15 +218,16 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	response.GenPageList()
 
-	var fileurl string
-	for _, page := range response.Query.Pages {
-		if len(page.Imageinfo) < 1 {
-			return nil, errors.New("No file found")
-		}
-		fileurl = page.Imageinfo[0].Url
-		break
+	if len(response.Query.PageList) < 1 {
+		return nil, errors.New("no file found")
 	}
+	page := response.Query.PageList[0]
+	if len(page.Imageinfo) < 1 {
+		return nil, errors.New("no file found")
+	}
+	fileurl := page.Imageinfo[0].Url
 
 	// Then return the body of the response
 	request, err := http.NewRequest("GET", fileurl, nil)
@@ -305,20 +318,19 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	if response.Upload.Result == "Success" || response.Upload.Result == "Warning" {
-		return nil
-	} else {
+	if !(response.Upload.Result == "Success" || response.Upload.Result == "Warning") {
 		return errors.New(response.Upload.Result)
 	}
+	return nil
 }
 
 // Login to the Mediawiki Website
 //
-// This will throw an error if you didn't define a username
+// This will return an error if you didn't define a username
 // or password.
 func (m *MWApi) Login() error {
 	if m.Username == "" || m.Password == "" {
-		return errors.New("Username or password not set.")
+		return errors.New("username or password not set")
 	}
 
 	query := map[string]string{
@@ -361,14 +373,13 @@ func (m *MWApi) Login() error {
 		return err
 	}
 
-	if response.Login.Result == "Success" {
-		return nil
-	} else {
+	if response.Login.Result != "Success" {
 		return errors.New("Error logging in: " + response.Login.Result)
 	}
+	return nil
 }
 
-// Get an edit token
+// GetEditToken retrieves an edittoken from the mediawiki site and saves it.
 //
 // This is necessary for editing any page.
 //
@@ -392,14 +403,15 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	for _, value := range response.Query.Pages {
-		m.edittoken = value.Edittoken
-		break
+	response.GenPageList()
+	if len(response.Query.PageList) < 1 {
+		return errors.New("no pages returned for edittoken query")
 	}
+	m.edittoken = response.Query.PageList[0].Edittoken
 	return nil
 }
 
-// Log out of the mediawiki website
+// Logout of the mediawiki website
 func (m *MWApi) Logout() {
 	m.API(map[string]string{"action": "logout"})
 }
@@ -439,14 +451,13 @@ func (m *MWApi) Edit(values map[string]string) error {
 		return err
 	}
 
-	if response.Edit.Result == "Success" {
-		return nil
-	} else {
+	if response.Edit.Result != "Success" {
 		return errors.New(response.Edit.Result)
 	}
+	return nil
 }
 
-// Request a wiki page and it's metadata.
+// Read returns a response which contains the contents of a page.
 func (m *MWApi) Read(pageName string) (*Response, error) {
 	query := map[string]string{
 		"action":  "query",
@@ -468,7 +479,7 @@ func (m *MWApi) Read(pageName string) (*Response, error) {
 	return &response, nil
 }
 
-// A generic interface to the Mediawiki API
+// API is a generic interface to the Mediawiki API
 // Refer to the mediawiki API reference for any information regarding
 // what to pass to this function.
 //

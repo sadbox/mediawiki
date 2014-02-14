@@ -16,8 +16,8 @@ const (
 	secondLogin      = `{"login":{"result":"Success","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","cookieprefix":"wikidb","sessionid":"927e0d298f6f3b5bb21228803fd9c0eb"}}`
 	readPage         = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page","revisions":[{"user":"Tariqabjotu","timestamp":"2013-09-27T03:10:17Z","comment":"removing unnecessary pipe","contentformat":"text/x-wiki","contentmodel":"wikitext","*":"FULL PAGE TEXT"}]}}}}`
-	fileUrl          = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
-	fileUrlFailed    = `{"query":{"pages":{"544100":{"pageid":544100,"ns":0,"title":"Asdf"}}}}`
+	fileURL          = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","imagerepository":"local","imageinfo":[{"url":"%s","descriptionurl":"TEST"}]}}}}`
+	fileURLFailed    = `{"query":{"pages":{"544100":{"pageid":544100,"ns":0,"title":"Asdf"}}}}`
 	mwerror          = `{"servedby":"mw1123","error":{"code":"unknown_action","info":"Unrecognized value for parameter 'action': blah"}}`
 	editsuccess      = `{"Edit":{"result":"Success","pageid":12,"title":"Talk:Main Page","oldrevid":465,"newrevid":471}}`
 	editfailure      = `{"Edit":{"result":"Failure!","pageid":12,"title":"Talk:Main Page","oldrevid":465,"newrevid":471}}`
@@ -221,7 +221,7 @@ func TestDownload(t *testing.T) {
 			panic(err)
 		}
 		if r.Method == "POST" {
-			fmt.Fprintln(w, fmt.Sprintf(fileUrl, r.Form.Get("titles")))
+			fmt.Fprintln(w, fmt.Sprintf(fileURL, r.Form.Get("titles")))
 		} else if r.Method == "GET" {
 			fmt.Fprintf(w, `THINGS`)
 		}
@@ -252,7 +252,7 @@ func TestDownloadNoFiles(t *testing.T) {
 			panic(err)
 		}
 		if r.Method == "POST" {
-			fmt.Fprintln(w, fileUrlFailed)
+			fmt.Fprintln(w, fileURLFailed)
 		} else if r.Method == "GET" {
 			fmt.Fprintf(w, `THINGS`)
 		}
@@ -365,6 +365,7 @@ func TestEditAutoToken(t *testing.T) {
 func TestEditSuccess(t *testing.T) {
 	test := BuildUp(editsuccess, t)
 	defer test.TearDown()
+	test.client.edittoken = "asdf"
 	err := test.client.Edit(map[string]string{"title": "somepage"})
 	if err != nil {
 		t.Fatal("Did not get non-error response back", err)
