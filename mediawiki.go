@@ -27,104 +27,6 @@ import (
 	"strings"
 )
 
-// MWApi is used to interact with the mediawiki server.
-type MWApi struct {
-	Username      string
-	Password      string
-	Domain        string
-	userAgent     string
-	url           *url.URL
-	client        *http.Client
-	format        string
-	edittoken     string
-	UseBasicAuth  bool
-	BasicAuthUser string
-	BasicAuthPass string
-}
-
-// Unmarshal login data...
-type outerLogin struct {
-	Login struct {
-		Result string
-		Token  string
-	}
-}
-
-// Unmarshall response from page edits...
-type outerEdit struct {
-	Edit struct {
-		Result   string
-		PageId   int
-		Title    string
-		OldRevId int
-		NewRevId int
-	}
-}
-
-// Response is a struct used for unmarshaling the mediawiki JSON
-// response to.
-//
-// It should be particularly useful when API needs to be called
-// directly.
-type Response struct {
-	Query Query
-}
-
-type Query struct {
-	Pages []Page
-}
-
-func (q *Query) UnmarshalJSON(b []byte) error {
-	tempData := struct{ Pages map[string]Page }{make(map[string]Page)}
-	err := json.Unmarshal(b, &tempData)
-	if err != nil {
-		return err
-	}
-	q.Pages = []Page{}
-	for _, page := range tempData.Pages {
-		q.Pages = append(q.Pages, page)
-	}
-	return nil
-}
-
-type Page struct {
-	Pageid    int
-	Ns        int
-	Title     string
-	Touched   string
-	Lastrevid int
-	// Mediawiki will return '' for zero, this makes me sad.
-	// If for some reason you need this value you'll have to
-	// do some type assertion sillyness.
-	Counter   interface{}
-	Length    int
-	Edittoken string
-	Revisions []struct {
-		// Take note, mediawiki literally returns { '*':
-		Body      string `json:"*"`
-		User      string
-		Timestamp string
-		Comment   string
-	}
-	Imageinfo []struct {
-		Url            string
-		Descriptionurl string
-	}
-}
-
-type mwError struct {
-	Error struct {
-		Code string
-		Info string
-	}
-}
-
-type uploadResponse struct {
-	Upload struct {
-		Result string
-	}
-}
-
 // Helper function for translating mediawiki errors in to golang errors.
 func checkError(response []byte) error {
 	var mwerror mwError
@@ -222,10 +124,10 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 		return nil, errors.New("no file found")
 	}
 	page := response.Query.Pages[0]
-	if len(page.Imageinfo) < 1 {
+	if len(page.ImageInfo) < 1 {
 		return nil, errors.New("no file found")
 	}
-	fileurl := page.Imageinfo[0].Url
+	fileurl := page.ImageInfo[0].URL
 
 	// Then return the body of the response
 	request, err := http.NewRequest("GET", fileurl, nil)
@@ -409,8 +311,9 @@ func (m *MWApi) GetEditToken() error {
 }
 
 // Logout of the mediawiki website
-func (m *MWApi) Logout() {
-	_, _ = m.API(map[string]string{"action": "logout"})
+func (m *MWApi) Logout() error {
+	_, err := m.API(map[string]string{"action": "logout"})
+	return err
 }
 
 // Edit a page
