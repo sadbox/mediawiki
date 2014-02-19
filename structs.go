@@ -57,12 +57,11 @@ type Query struct {
 
 // UnmarshalJSON is used to unmarshal the mediawiki pages in to a list
 func (q *Query) UnmarshalJSON(b []byte) error {
-	tempData := struct{ Pages map[string]Page }{make(map[string]Page)}
+	tempData := struct{ Pages map[string]Page }{}
 	err := json.Unmarshal(b, &tempData)
 	if err != nil {
 		return err
 	}
-	q.Pages = []Page{}
 	for _, page := range tempData.Pages {
 		q.Pages = append(q.Pages, page)
 	}
