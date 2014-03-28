@@ -2,9 +2,13 @@ go-mediawiki [![Build Status](https://drone.io/github.com/sadbox/mediawiki/statu
 ========
 A MediaWiki API wrapper for [Go](http://golang.org/)
 
+Compatibility
+-------------
+Please check the dev branch for a much saner way of getting back results from mediawiki. At some point in the future it will be the only way, but I'd like to avoid breaking things for now. Most likely any dev work will continue there (excluding bug fixes).
+
 Documentation
 -------------
-Documentation specific to this implementaiton is [located on GoDoc](http://godoc.org/github.com/sadbox/mediawiki)
+Documentation specific to this implementation is [located on GoDoc](http://godoc.org/github.com/sadbox/mediawiki)
 
 Documentation specific to the Mediawiki API in general is located [at their own wiki](http://www.mediawiki.org/wiki/API:Main_page)
 
