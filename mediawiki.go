@@ -87,6 +87,7 @@ func (r *Response) GenPageList() {
 	}
 }
 
+// Page is a mediawiki page and the meatadata about it.
 type Page struct {
 	Pageid    int
 	Ns        int
@@ -140,7 +141,7 @@ func checkError(response []byte) error {
 
 // New generates a new mediawiki API (MWApi) struct.
 //
-// Example: mwapi.New("http://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
+// Example: mediawiki.New("http://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
 // Returns errors if the URL is invalid
 func New(wikiURL, userAgent string) (*MWApi, error) {
 	cookiejar, err := cookiejar.New(nil)
