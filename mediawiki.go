@@ -87,7 +87,7 @@ func (r *Response) GenPageList() {
 	}
 }
 
-// A MediaWiki page and its metadata
+// A Page represents a MediaWiki page and its metadata.
 type Page struct {
 	Pageid    int
 	Ns        int
