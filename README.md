@@ -11,15 +11,15 @@ Documentation specific to the Mediawiki API in general is located [at their own 
 Examples are located in the [examples subdirectory.](/examples)
 
 
-TODO
+Supported features
 ----
-- ☑ Login/Logout
-- ☑ Edit Pages
-- ☑ Read Pages
-- ☑ Upload
-- ☑ Download
-- ☑ Generic API Interface
-- ☑ Unit tests
+* Login/Logout
+* Edit Pages
+* Read Pages
+* Upload
+* Download
+* Generic API Interface
+* Unit tests
 
 License
 -------
