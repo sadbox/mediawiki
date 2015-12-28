@@ -77,10 +77,8 @@ func TestLogin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %s", err.Error())
 	}
-	client.Password = "asdf"
-	client.Username = "asdf"
 	client.Domain = "asdf"
-	err = client.Login()
+	err = client.Login("asdf", "asdf")
 	if err != nil {
 		t.Error("Client failed to login: %s", err)
 	} else {
@@ -105,10 +103,8 @@ func TestLoginFailedSecondary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating client: %s", err)
 	}
-	client.Password = "asdf"
-	client.Username = "asdf"
 	client.Domain = "asdf"
-	err = client.Login()
+	err = client.Login("asdf", "asdf")
 	if err == nil {
 		t.Error("Client logged in successfully. (BUT THIS IS BAD!)")
 	} else {
@@ -119,7 +115,7 @@ func TestLoginFailedSecondary(t *testing.T) {
 func TestLoginNoPW(t *testing.T) {
 	test := BuildUp(failedLogin, t)
 	defer test.TearDown()
-	err := test.client.Login()
+	err := test.client.Login("", "")
 	if err != nil {
 		t.Log("Client refused to login with password.")
 	} else {
@@ -130,9 +126,7 @@ func TestLoginNoPW(t *testing.T) {
 func TestLoginFailed(t *testing.T) {
 	test := BuildUp(failedLogin, t)
 	defer test.TearDown()
-	test.client.Username = "asdf"
-	test.client.Password = "JKLa"
-	err := test.client.Login()
+	err := test.client.Login("asdf", "JKLa")
 	if err != nil {
 		t.Logf("Failed to log in: %s", err.Error())
 	} else {

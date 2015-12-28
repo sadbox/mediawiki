@@ -29,8 +29,8 @@ import (
 
 // MWApi is used to interact with the mediawiki server.
 type MWApi struct {
-	Username      string
-	Password      string
+	username      string
+	password      string
 	Domain        string
 	userAgent     string
 	url           *url.URL
@@ -325,19 +325,21 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	return nil
 }
 
-// Login to the Mediawiki Website
-//
-// This will return an error if you didn't define a username
-// or password.
-func (m *MWApi) Login() error {
-	if m.Username == "" || m.Password == "" {
-		return errors.New("username or password not set")
+// Login to the Mediawiki Website.
+func (m *MWApi) Login(username, password string) error {
+	if username == "" {
+		return errors.New("empty username supplied")
 	}
+	if password == "" {
+		return errors.New("empty password supplied")
+	}
+	m.username = username
+	m.password = password
 
 	query := map[string]string{
 		"action":     "login",
-		"lgname":     m.Username,
-		"lgpassword": m.Password,
+		"lgname":     m.username,
+		"lgpassword": m.password,
 	}
 
 	if m.Domain != "" {
