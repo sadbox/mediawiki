@@ -458,7 +458,8 @@ func (m *MWApi) Edit(values map[string]string) error {
 	return nil
 }
 
-// Read returns a response which contains the contents of a page.
+// Read returns a Response which contains the contents of a page.
+// Only the most recent revision is fetched.
 func (m *MWApi) Read(pageName string) (*Response, error) {
 	query := map[string]string{
 		"action":  "query",
