@@ -147,7 +147,7 @@ func TestPostForm(t *testing.T) {
 			panic(err)
 		}
 
-		if r.Header.Get("user-agent") != "go-mediawiki https://github.com/sadbox/go-mediawiki TESTING" {
+		if r.Header.Get("user-agent") != "mediawiki (Golang) https://github.com/sadbox/mediawiki TESTING" {
 			fmt.Fprintln(w, "USERAGENT")
 		} else {
 			fmt.Fprintln(w, r.Form.Get("KEY"))
