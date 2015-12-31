@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-// MWApi is used to interact with the mediawiki server.
+// MWApi is used to interact with the MediaWiki server.
 type MWApi struct {
 	username      string
 	password      string
@@ -61,11 +61,7 @@ type outerEdit struct {
 	}
 }
 
-// Response is a struct used for unmarshaling the mediawiki JSON
-// response to.
-//
-// It should be particularly useful when API needs to be called
-// directly.
+// Response is a struct used for unmarshaling the MediaWiki JSON response.
 type Response struct {
 	Query struct {
 		// The json response for this part of the struct is dumb.
@@ -79,7 +75,7 @@ type Response struct {
 }
 
 // GenPageList generates PageList from Pages to work around the sillyness in
-// the mediawiki API.
+// the MediaWiki API.
 func (r *Response) GenPageList() {
 	r.Query.PageList = []Page{}
 	for _, page := range r.Query.Pages {
@@ -101,7 +97,7 @@ type Page struct {
 	Length    int
 	Edittoken string
 	Revisions []struct {
-		// Take note, mediawiki literally returns { '*':
+		// Take note, MediaWiki literally returns { '*':
 		Body      string `json:"*"`
 		User      string
 		Timestamp string
@@ -126,7 +122,7 @@ type uploadResponse struct {
 	}
 }
 
-// Helper function for translating mediawiki errors in to golang errors.
+// Helper function for translating MediaWiki errors in to Golang errors.
 func checkError(response []byte) error {
 	var mwerror mwError
 	err := json.Unmarshal(response, &mwerror)
@@ -139,7 +135,7 @@ func checkError(response []byte) error {
 	}
 }
 
-// New generates a new mediawiki API (MWApi) struct.
+// New generates a new MediaWiki API (MWApi) struct.
 //
 // Example: mediawiki.New("http://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
 // Returns errors if the URL is invalid
@@ -164,7 +160,7 @@ func New(wikiURL, userAgent string) (*MWApi, error) {
 		url:       clientURL,
 		client:    &client,
 		format:    "json",
-		userAgent: "go-mediawiki https://github.com/sadbox/go-mediawiki " + userAgent,
+		userAgent: "mediawiki (Golang) https://github.com/sadbox/mediawiki " + userAgent,
 	}, nil
 }
 
@@ -382,7 +378,7 @@ func (m *MWApi) Login(username, password string) error {
 	return nil
 }
 
-// GetEditToken retrieves an edittoken from the mediawiki site and saves it.
+// GetEditToken retrieves an edit token from the MediaWiki site and saves it.
 //
 // This is necessary for editing any page.
 //
@@ -414,15 +410,15 @@ func (m *MWApi) GetEditToken() error {
 	return nil
 }
 
-// Logout of the mediawiki website
+// Logout of the MediaWiki website
 func (m *MWApi) Logout() {
 	m.API(map[string]string{"action": "logout"})
 }
 
-// Edit a page
+// Edit a page.
 //
-// This function will automatically grab an Edit Token if there
-// is not one currently stored.
+// This function will request an edit token if the MWApi struct doesn't already
+// contain one.
 //
 // Example:
 //
@@ -483,11 +479,10 @@ func (m *MWApi) Read(pageName string) (*Response, error) {
 	return &response, nil
 }
 
-// API is a generic interface to the Mediawiki API
-// Refer to the mediawiki API reference for any information regarding
-// what to pass to this function.
+// API is a generic interface to the Mediawiki API.
+// Refer to the MediaWiki API reference for details.
 //
-// This is used by all internal functions to interact with the API
+// This is used by all internal functions to interact with the API.
 func (m *MWApi) API(values ...map[string]string) ([]byte, error) {
 	query := m.url.Query()
 	for _, valuemap := range values {
