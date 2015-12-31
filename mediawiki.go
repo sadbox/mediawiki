@@ -10,7 +10,7 @@
 // functions defined for the MWApi struct for information
 // regarding this specific implementation.
 //
-// The client subdirectory contains an example application
+// The examples/ subdirectory contains an example application
 // that uses this API.
 package mediawiki
 
