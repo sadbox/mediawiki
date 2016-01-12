@@ -67,20 +67,20 @@ type Response struct {
 		// The json response for this part of the struct is dumb.
 		// It will return something like { '23': { 'pageid': 23 ...
 		//
-		// As a workaround you can use GenPageList which will create
+		// As a workaround you can use PageSlice which will create
 		// a list of pages from the map.
 		Pages    map[string]Page
-		PageList []Page
 	}
 }
 
-// GenPageList generates PageList from Pages to work around the sillyness in
+// PageSlice generates a slice from Pages to work around the sillyness in
 // the MediaWiki API.
-func (r *Response) GenPageList() {
-	r.Query.PageList = []Page{}
+func (r *Response) PageSlice() []Page {
+	pl := []Page{}
 	for _, page := range r.Query.Pages {
-		r.Query.PageList = append(r.Query.PageList, page)
+		pl = append(pl, page)
 	}
+	return pl
 }
 
 // A Page represents a MediaWiki page and its metadata.
@@ -215,12 +215,12 @@ func (m *MWApi) Download(filename string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	response.GenPageList()
+	pl := response.PageSlice()
 
-	if len(response.Query.PageList) < 1 {
+	if len(pl) < 1 {
 		return nil, errors.New("no file found")
 	}
-	page := response.Query.PageList[0]
+	page := pl[0]
 	if len(page.Imageinfo) < 1 {
 		return nil, errors.New("no file found")
 	}
@@ -402,11 +402,11 @@ func (m *MWApi) GetEditToken() error {
 	if err != nil {
 		return err
 	}
-	response.GenPageList()
-	if len(response.Query.PageList) < 1 {
+	pl := response.PageSlice()
+	if len(pl) < 1 {
 		return errors.New("no pages returned for edittoken query")
 	}
-	m.edittoken = response.Query.PageList[0].Edittoken
+	m.edittoken = pl[0].Edittoken
 	return nil
 }
 
