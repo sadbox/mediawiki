@@ -197,14 +197,12 @@ func TestAPI(t *testing.T) {
 func TestRead(t *testing.T) {
 	test := BuildUp(readPage, t)
 	defer test.TearDown()
-	query, err := test.client.Read("TESTING PAGE")
+	page, err := test.client.Read("TESTING PAGE")
 	if err != nil {
 		t.Fatal("Unable to read page: %s", err)
 	}
-	for _, page := range query.Query.Pages {
-		if page.Revisions[0].Body != "FULL PAGE TEXT" {
-			t.Error("Page content not correct")
-		}
+	if page.Revisions[0].Body != "FULL PAGE TEXT" {
+		t.Error("Page content not correct")
 	}
 }
 

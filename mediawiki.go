@@ -456,9 +456,9 @@ func (m *MWApi) Edit(values map[string]string) error {
 	return nil
 }
 
-// Read returns a Response which contains the contents of a page.
-// Only the most recent revision is fetched.
-func (m *MWApi) Read(pageName string) (*Response, error) {
+// Read returns the most recent revision of a Page. If an error occurs, nil is
+// returned.
+func (m *MWApi) Read(pageName string) (*Page, error) {
 	query := map[string]string{
 		"action":  "query",
 		"prop":    "revisions",
@@ -476,7 +476,17 @@ func (m *MWApi) Read(pageName string) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &response, nil
+
+	if len(response.Query.Pages) != 1 {
+		return nil, errors.New("received unexpected number of pages")
+	}
+
+	// we use a hacky way of extracting the map's lone value
+	var page *Page
+	for _, pg := range response.Query.Pages {
+		page = &pg
+	}
+	return page, nil
 }
 
 // API is a generic interface to the Mediawiki API.

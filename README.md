@@ -1,14 +1,14 @@
 go-mediawiki | [![Build Status](https://drone.io/github.com/sadbox/mediawiki/status.png)](https://drone.io/github.com/sadbox/mediawiki/latest) | [![GoDoc](https://godoc.org/github.com/sadbox/mediawiki?status.png)](http://godoc.org/github.com/sadbox/mediawiki) | [![Coverage Status](https://coveralls.io/repos/sadbox/mediawiki/badge.png?branch=master)](https://coveralls.io/r/sadbox/mediawiki?branch=master)
 ========
-A MediaWiki API wrapper for [Go](http://golang.org/)
+A MediaWiki API wrapper for [Go](http://golang.org/).
 
 Documentation
 -------------
-Documentation specific to this implementation is [located on GoDoc](http://godoc.org/github.com/sadbox/mediawiki)
+Documentation specific to this implementation is [located on GoDoc](http://godoc.org/github.com/sadbox/mediawiki).
 
-Documentation specific to the Mediawiki API in general is located [at their own wiki](http://www.mediawiki.org/wiki/API:Main_page)
+Documentation specific to the Mediawiki API in general is located [at their own wiki](http://www.mediawiki.org/wiki/API:Main_page).
 
-Examples are located in the [examples subdirectory.](/examples)
+Examples are located in the [examples subdirectory](/examples).
 
 
 Supported features
