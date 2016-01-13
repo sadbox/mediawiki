@@ -64,7 +64,7 @@ type outerEdit struct {
 // Response is a struct used for unmarshaling the MediaWiki JSON response.
 type Response struct {
 	Query struct {
-		// The json response for this part of the struct is dumb.
+		// The JSON response for this part of the struct is dumb.
 		// It will return something like { '23': { 'pageid': 23 ...
 		//
 		// As a workaround you can use PageSlice which will create
