@@ -69,7 +69,7 @@ type Response struct {
 		//
 		// As a workaround you can use PageSlice which will create
 		// a list of pages from the map.
-		Pages    map[string]Page
+		Pages map[string]Page
 	}
 }
 
@@ -120,6 +120,27 @@ type uploadResponse struct {
 	Upload struct {
 		Result string
 	}
+}
+
+type UploadDupError struct {
+	Upload struct {
+		Warnings struct {
+			Exists    string   `json:"exists"`
+			Duplicate []string `json:"duplicate"`
+		} `json:"warnings"`
+	} `json:"upload"`
+}
+
+func (u *UploadDupError) Error() string {
+
+	if len(u.Upload.Warnings.Exists) > 0 {
+		return u.Upload.Warnings.Exists
+	}
+
+	if len(u.Upload.Warnings.Duplicate) > 0 {
+		return u.Upload.Warnings.Duplicate[0]
+	}
+	return ""
 }
 
 // Helper function for translating MediaWiki errors in to Golang errors.
@@ -315,7 +336,18 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	if !(response.Upload.Result == "Success" || response.Upload.Result == "Warning") {
+
+	if response.Upload.Result == "Warning" {
+
+		dup := UploadDupError{}
+		if err := json.Unmarshal(body, &dup); err != nil {
+			return err
+		}
+		return &dup
+	}
+
+	if !(response.Upload.Result == "Success") {
+
 		return errors.New(response.Upload.Result)
 	}
 	return nil
