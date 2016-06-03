@@ -1,4 +1,7 @@
-// Copyright 2013 James McGuire
+//
+// Copyright 2016 James McGuire
+// Copyright 2016 Michael McConville <mmcco@mykolab.com>
+//
 // This code is covered under the MIT License
 // Please refer to the LICENSE file in the root of this
 // repository for any information.
