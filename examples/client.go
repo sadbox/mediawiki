@@ -89,15 +89,12 @@ func main() {
 	fmt.Println(fi.Name(), fi.Size())
 
 	// EDIT A PAGE
-	editConfig := map[string]string{
-		"title":   "",
-		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",
-		"text":    "THE ENTIRE TEXT OF THE PAGE",
-	}
-
 	userStrs := []string{"User:", config.Username, "/sandbox"}
-	editConfig["title"] = strings.Join(userStrs, "")
-	fmt.Println(editConfig["title"])
+	editConfig := map[string]string{
+		"title": strings.Join(userStrs, ""),
+		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",
+		"text": "THE ENTIRE TEXT OF THE PAGE",
+	}
 
 	err = client.Edit(editConfig)
 
