@@ -80,7 +80,7 @@ func TestLogin(t *testing.T) {
 	client.Domain = "asdf"
 	err = client.Login("asdf", "asdf")
 	if err != nil {
-		t.Error("Client failed to login: %s", err)
+		t.Errorf("Client failed to login: %s", err)
 	} else {
 		t.Log("Client logged in successfully.")
 	}
@@ -108,7 +108,7 @@ func TestLoginFailedSecondary(t *testing.T) {
 	if err == nil {
 		t.Error("Client logged in successfully. (BUT THIS IS BAD!)")
 	} else {
-		t.Log("Client failed to login: %s (BUT THIS IS GOOD!)", err)
+		t.Logf("Client failed to login: %s (BUT THIS IS GOOD!)", err)
 	}
 }
 
@@ -199,7 +199,7 @@ func TestRead(t *testing.T) {
 	defer test.TearDown()
 	page, err := test.client.Read("TESTING PAGE")
 	if err != nil {
-		t.Fatal("Unable to read page: %s", err)
+		t.Fatalf("Unable to read page: %s", err)
 	}
 	if page.Revisions[0].Body != "FULL PAGE TEXT" {
 		t.Error("Page content not correct")
