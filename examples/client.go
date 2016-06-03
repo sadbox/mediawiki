@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 var config Config
@@ -36,27 +37,22 @@ func main() {
 	}
 
 	// LOGIN
-	// The username and passsword are required
-	client.Username = config.Username
-	client.Password = config.Password
-	// But the domain is not
+	// the username and passsword are required, but the domain is not
 	client.Domain = config.Domain
 
-	err = client.Login()
+	err = client.Login(config.Username, config.Password)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Logout()
 
 	// READ A PAGE
-	resp, err := client.Read("Main Page")
+	page, err := client.Read("Main Page")
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, page := range resp.Query.Pages {
-		for _, rev := range page.Revisions {
-			fmt.Println(rev.Body)
-		}
+	for _, rev := range page.Revisions {
+		fmt.Println(rev.Body)
 	}
 
 	// UPLOAD A FILE
@@ -94,10 +90,14 @@ func main() {
 
 	// EDIT A PAGE
 	editConfig := map[string]string{
-		"title":   "SOME PAGE",
+		"title":   "",
 		"summary": "THIS IS WHAT SHOWS UP IN THE LOG",
 		"text":    "THE ENTIRE TEXT OF THE PAGE",
 	}
+
+	userStrs := []string{"User:", config.Username, "/sandbox"}
+	editConfig["title"] = strings.Join(userStrs, "")
+	fmt.Println(editConfig["title"])
 
 	err = client.Edit(editConfig)
 
