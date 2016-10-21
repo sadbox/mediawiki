@@ -6,7 +6,7 @@ Documentation
 -------------
 Documentation specific to this implementation is [located on GoDoc](https://godoc.org/github.com/sadbox/mediawiki).
 
-Documentation specific to the Mediawiki API in general is located [at their own wiki](http://www.mediawiki.org/wiki/API:Main_page).
+Documentation specific to the MediaWiki API in general is located [at their own wiki](http://www.mediawiki.org/wiki/API:Main_page).
 
 Examples are located in the [examples subdirectory](/examples).
 
