@@ -8,7 +8,7 @@
 
 // Package mediawiki provides a wrapper for interacting with the Mediawiki API
 //
-// Please see http://www.mediawiki.org/wiki/API:Main_page
+// Please see https://www.mediawiki.org/wiki/API:Main_page
 // for any API specific information or refer to any of the
 // functions defined for the MWApi struct for information
 // regarding this specific implementation.
@@ -28,6 +28,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // MWApi is used to interact with the MediaWiki server.
@@ -72,7 +73,7 @@ type Response struct {
 		//
 		// As a workaround you can use PageSlice which will create
 		// a list of pages from the map.
-		Pages    map[string]Page
+		Pages map[string]Page
 	}
 }
 
@@ -100,11 +101,19 @@ type Page struct {
 	Length    int
 	Edittoken string
 	Revisions []struct {
-		// Take note, MediaWiki literally returns { '*':
-		Body      string `json:"*"`
-		User      string
-		Timestamp string
-		Comment   string
+		Revid         int       `json:"revid"`
+		Parentid      int       `json:"parentid"`
+		Minor         string    `json:"minor"`
+		User          string    `json:"user"`
+		Userid        int       `json:"userid"`
+		Timestamp     time.Time `json:"timestamp"`
+		Size          int       `json:"size"`
+		Sha1          string    `json:"sha1"`
+		ContentModel  string    `json:"contentmodel"`
+		Comment       string    `json:"comment"`
+		ParsedComment string    `json:"parsedcomment"`
+		ContentFormat string    `json:"contentformat"`
+		Body          string    `json:"*"` // Take note, MediaWiki literally returns { '*':
 	}
 	Imageinfo []struct {
 		Url            string
@@ -140,7 +149,7 @@ func checkError(response []byte) error {
 
 // New generates a new MediaWiki API (MWApi) struct.
 //
-// Example: mediawiki.New("http://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
+// Example: mediawiki.New("https://en.wikipedia.org/w/api.php", "My Mediawiki Bot")
 // Returns errors if the URL is invalid
 func New(wikiURL, userAgent string) (*MWApi, error) {
 	cookiejar, err := cookiejar.New(nil)
