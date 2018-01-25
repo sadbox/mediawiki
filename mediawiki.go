@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -270,6 +271,8 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 		}
 	}
 
+	fmt.Println("test from package")
+
 	query := map[string]string{
 		"action":   "upload",
 		"filename": dstFilename,
@@ -317,6 +320,8 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
+	// for testing purpose only
+	fmt.Println("test for body above")
 
 	if err = checkError(body); err != nil {
 		return err
@@ -327,6 +332,9 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
+
+	// for testing purpose only
+	fmt.Println(response)
 	if !(response.Upload.Result == "Success") || response.Upload.Result == "Warning" {
 		return errors.New(response.Upload.Result)
 	}
