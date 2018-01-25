@@ -139,7 +139,7 @@ func checkError(response []byte) error {
 	var mwerror mwError
 	err := json.Unmarshal(response, &mwerror)
 	if err != nil {
-		return nil
+		return err
 	} else if mwerror.Error.Code != "" {
 		return errors.New(mwerror.Error.Code + ": " + mwerror.Error.Info)
 	} else {
@@ -327,7 +327,7 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 	if err != nil {
 		return err
 	}
-	if !(response.Upload.Result == "Success" || response.Upload.Result == "Warning") {
+	if !(response.Upload.Result == "Success") || response.Upload.Result == "Warning" {
 		return errors.New(response.Upload.Result)
 	}
 	return nil

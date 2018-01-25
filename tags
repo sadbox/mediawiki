@@ -1,0 +1,96 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/248cffc9/
+API	mediawiki.go	/^func (m *MWApi) API(values ...map[string]string) ([]byte, error) {$/;"	f	unknown:mediawiki.MWApi
+BasicAuthPass	mediawiki.go	/^	BasicAuthPass string$/;"	m	struct:mediawiki.MWApi
+BasicAuthUser	mediawiki.go	/^	BasicAuthUser string$/;"	m	struct:mediawiki.MWApi
+BuildUp	mediawiki_test.go	/^func BuildUp(response string, t *testing.T) *Test {$/;"	f	package:mediawiki
+Config	examples/client.go	/^type Config struct {$/;"	s	package:main
+Counter	mediawiki.go	/^	Counter   interface{}$/;"	m	struct:mediawiki.Page
+Domain	examples/client.go	/^	Domain   string$/;"	m	struct:main.Config
+Domain	mediawiki.go	/^	Domain        string$/;"	m	struct:mediawiki.MWApi
+Download	mediawiki.go	/^func (m *MWApi) Download(filename string) (io.ReadCloser, error) {$/;"	f	unknown:mediawiki.MWApi
+Edit	mediawiki.go	/^	Edit struct {$/;"	m	struct:mediawiki.outerEdit
+Edit	mediawiki.go	/^func (m *MWApi) Edit(values map[string]string) error {$/;"	f	unknown:mediawiki.MWApi
+Edittoken	mediawiki.go	/^	Edittoken string$/;"	m	struct:mediawiki.Page
+Error	mediawiki.go	/^	Error struct {$/;"	m	struct:mediawiki.mwError
+GetEditToken	mediawiki.go	/^func (m *MWApi) GetEditToken() error {$/;"	f	unknown:mediawiki.MWApi
+Imageinfo	mediawiki.go	/^	Imageinfo []struct {$/;"	m	struct:mediawiki.Page
+Lastrevid	mediawiki.go	/^	Lastrevid int$/;"	m	struct:mediawiki.Page
+Length	mediawiki.go	/^	Length    int$/;"	m	struct:mediawiki.Page
+Login	mediawiki.go	/^	Login struct {$/;"	m	struct:mediawiki.outerLogin
+Login	mediawiki.go	/^func (m *MWApi) Login(username, password string) error {$/;"	f	unknown:mediawiki.MWApi
+Logout	mediawiki.go	/^func (m *MWApi) Logout() {$/;"	f	unknown:mediawiki.MWApi
+MWApi	mediawiki.go	/^type MWApi struct {$/;"	s	package:mediawiki
+New	mediawiki.go	/^func New(wikiURL, userAgent string) (*MWApi, error) {$/;"	f	package:mediawiki
+Ns	mediawiki.go	/^	Ns        int$/;"	m	struct:mediawiki.Page
+Page	mediawiki.go	/^type Page struct {$/;"	s	package:mediawiki
+PageSlice	mediawiki.go	/^func (r *Response) PageSlice() []Page {$/;"	f	unknown:mediawiki.Response
+Pageid	mediawiki.go	/^	Pageid    int$/;"	m	struct:mediawiki.Page
+Password	examples/client.go	/^	Password string$/;"	m	struct:main.Config
+Query	mediawiki.go	/^	Query struct {$/;"	m	struct:mediawiki.Response
+Read	mediawiki.go	/^func (m *MWApi) Read(pageName string) (*Page, error) {$/;"	f	unknown:mediawiki.MWApi
+Response	mediawiki.go	/^type Response struct {$/;"	s	package:mediawiki
+Revisions	mediawiki.go	/^	Revisions []struct {$/;"	m	struct:mediawiki.Page
+TearDown	mediawiki_test.go	/^func (t *Test) TearDown() {$/;"	f	unknown:mediawiki.Test
+Test	mediawiki_test.go	/^type Test struct {$/;"	s	package:mediawiki
+TestAPI	mediawiki_test.go	/^func TestAPI(t *testing.T) {$/;"	f	package:mediawiki
+TestBasicAuth	mediawiki_test.go	/^func TestBasicAuth(t *testing.T) {$/;"	f	package:mediawiki
+TestDownload	mediawiki_test.go	/^func TestDownload(t *testing.T) {$/;"	f	package:mediawiki
+TestDownloadNoFiles	mediawiki_test.go	/^func TestDownloadNoFiles(t *testing.T) {$/;"	f	package:mediawiki
+TestEditAutoToken	mediawiki_test.go	/^func TestEditAutoToken(t *testing.T) {$/;"	f	package:mediawiki
+TestEditFail	mediawiki_test.go	/^func TestEditFail(t *testing.T) {$/;"	f	package:mediawiki
+TestEditSuccess	mediawiki_test.go	/^func TestEditSuccess(t *testing.T) {$/;"	f	package:mediawiki
+TestGetEditToken	mediawiki_test.go	/^func TestGetEditToken(t *testing.T) {$/;"	f	package:mediawiki
+TestLogin	mediawiki_test.go	/^func TestLogin(t *testing.T) {$/;"	f	package:mediawiki
+TestLoginFailed	mediawiki_test.go	/^func TestLoginFailed(t *testing.T) {$/;"	f	package:mediawiki
+TestLoginFailedSecondary	mediawiki_test.go	/^func TestLoginFailedSecondary(t *testing.T) {$/;"	f	package:mediawiki
+TestLoginNoPW	mediawiki_test.go	/^func TestLoginNoPW(t *testing.T) {$/;"	f	package:mediawiki
+TestMWError	mediawiki_test.go	/^func TestMWError(t *testing.T) {$/;"	f	package:mediawiki
+TestPostForm	mediawiki_test.go	/^func TestPostForm(t *testing.T) {$/;"	f	package:mediawiki
+TestRead	mediawiki_test.go	/^func TestRead(t *testing.T) {$/;"	f	package:mediawiki
+TestUpload	mediawiki_test.go	/^func TestUpload(t *testing.T) {$/;"	f	package:mediawiki
+TestUploadAutoToken	mediawiki_test.go	/^func TestUploadAutoToken(t *testing.T) {$/;"	f	package:mediawiki
+TestUploadFailResponse	mediawiki_test.go	/^func TestUploadFailResponse(t *testing.T) {$/;"	f	package:mediawiki
+Title	mediawiki.go	/^	Title     string$/;"	m	struct:mediawiki.Page
+Touched	mediawiki.go	/^	Touched   string$/;"	m	struct:mediawiki.Page
+Upload	mediawiki.go	/^	Upload struct {$/;"	m	struct:mediawiki.uploadResponse
+Upload	mediawiki.go	/^func (m *MWApi) Upload(dstFilename string, file io.Reader) error {$/;"	f	unknown:mediawiki.MWApi
+UseBasicAuth	mediawiki.go	/^	UseBasicAuth  bool$/;"	m	struct:mediawiki.MWApi
+Username	examples/client.go	/^	Username string$/;"	m	struct:main.Config
+WikiURL	examples/client.go	/^	WikiURL  string$/;"	m	struct:main.Config
+checkError	mediawiki.go	/^func checkError(response []byte) error {$/;"	f	package:mediawiki
+client	mediawiki.go	/^	client        *http.Client$/;"	m	struct:mediawiki.MWApi
+client	mediawiki_test.go	/^	client *MWApi$/;"	m	struct:mediawiki.Test
+config	examples/client.go	/^var config Config$/;"	v	package:main
+editTokenReponse	mediawiki_test.go	/^	editTokenReponse = `{"query":{"pages":{"15580374":{"pageid":15580374,"ns":0,"title":"Main Page"/;"	c	package:mediawiki
+editfailure	mediawiki_test.go	/^	editfailure      = `{"Edit":{"result":"Failure!","pageid":12,"title":"Talk:Main Page","oldrevid/;"	c	package:mediawiki
+editsuccess	mediawiki_test.go	/^	editsuccess      = `{"Edit":{"result":"Success","pageid":12,"title":"Talk:Main Page","oldrevid"/;"	c	package:mediawiki
+edittoken	mediawiki.go	/^	edittoken     string$/;"	m	struct:mediawiki.MWApi
+failedLogin	mediawiki_test.go	/^	failedLogin      = `{"login":{"result":"ERROR THING","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80"/;"	c	package:mediawiki
+fileURL	mediawiki_test.go	/^	fileURL          = `{"query":{"pages":{"107":{"pageid":107,"ns":6,"title":"File:stuff.pdf","ima/;"	c	package:mediawiki
+fileURLFailed	mediawiki_test.go	/^	fileURLFailed    = `{"query":{"pages":{"544100":{"pageid":544100,"ns":0,"title":"Asdf"}}}}`$/;"	c	package:mediawiki
+firstLogin	mediawiki_test.go	/^	firstLogin       = `{"login":{"result":"NeedToken","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","/;"	c	package:mediawiki
+format	mediawiki.go	/^	format        string$/;"	m	struct:mediawiki.MWApi
+init	examples/client.go	/^func init() {$/;"	f	package:main
+main	examples/client.go	/^func main() {$/;"	f	package:main
+main	examples/client.go	/^package main$/;"	p
+mediawiki	mediawiki.go	/^package mediawiki$/;"	p
+mediawiki	mediawiki_test.go	/^package mediawiki$/;"	p
+mwError	mediawiki.go	/^type mwError struct {$/;"	s	package:mediawiki
+mwerror	mediawiki_test.go	/^	mwerror          = `{"servedby":"mw1123","error":{"code":"unknown_action","info":"Unrecognized /;"	c	package:mediawiki
+outerEdit	mediawiki.go	/^type outerEdit struct {$/;"	s	package:mediawiki
+outerLogin	mediawiki.go	/^type outerLogin struct {$/;"	s	package:mediawiki
+password	mediawiki.go	/^	password      string$/;"	m	struct:mediawiki.MWApi
+postForm	mediawiki.go	/^func (m *MWApi) postForm(query url.Values) ([]byte, error) {$/;"	f	unknown:mediawiki.MWApi
+readPage	mediawiki_test.go	/^	readPage         = `{"query-continue":{"revisions":{"rvcontinue":574690493}},"query":{"pages":{/;"	c	package:mediawiki
+secondLogin	mediawiki_test.go	/^	secondLogin      = `{"login":{"result":"Success","token":"8f48670ddc7fa9d5fa7e7fa2ae147e80","co/;"	c	package:mediawiki
+ts	mediawiki_test.go	/^	ts     *httptest.Server$/;"	m	struct:mediawiki.Test
+uploadResponse	mediawiki.go	/^type uploadResponse struct {$/;"	s	package:mediawiki
+url	mediawiki.go	/^	url           *url.URL$/;"	m	struct:mediawiki.MWApi
+userAgent	mediawiki.go	/^	userAgent     string$/;"	m	struct:mediawiki.MWApi
+username	mediawiki.go	/^	username      string$/;"	m	struct:mediawiki.MWApi
