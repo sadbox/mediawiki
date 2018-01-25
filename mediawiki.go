@@ -140,7 +140,7 @@ func checkError(response []byte) error {
 	var mwerror mwError
 	err := json.Unmarshal(response, &mwerror)
 	if err != nil {
-		return fmt.Errorf("Unmarshal err: %v", err.Error())
+		return nil
 	} else if mwerror.Error.Code != "" {
 		return errors.New(mwerror.Error.Code + ": " + mwerror.Error.Info)
 	} else {
