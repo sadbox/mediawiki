@@ -23,3 +23,6 @@ _testmain.go
 
 /examples/examples
 /examples/config.xml
+
+# tag generation for vi
+tags
