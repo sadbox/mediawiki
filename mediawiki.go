@@ -271,8 +271,6 @@ func (m *MWApi) Upload(dstFilename string, file io.Reader) error {
 		}
 	}
 
-	fmt.Println("test from package")
-
 	query := map[string]string{
 		"action":   "upload",
 		"filename": dstFilename,
