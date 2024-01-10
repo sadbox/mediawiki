@@ -65,6 +65,14 @@ type outerEdit struct {
 	}
 }
 
+type tokenResponse struct {
+	Query struct {
+		Tokens struct {
+			Csrftoken string
+		}
+	}
+}
+
 // Response is a struct used for unmarshaling the MediaWiki JSON response.
 type Response struct {
 	Query struct {
@@ -399,26 +407,26 @@ func (m *MWApi) Login(username, password string) error {
 // calls to API().
 func (m *MWApi) GetEditToken() error {
 	query := map[string]string{
-		"action":  "query",
-		"prop":    "info|revisions",
-		"intoken": "edit",
-		"titles":  "Main Page",
+		"action":        "query",
+		"meta":          "tokens",
+		"formatversion": "2",
+		"type":          "csrf",
 	}
 
 	body, err := m.API(query)
 	if err != nil {
 		return err
 	}
-	var response Response
+	var response tokenResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return err
 	}
-	pl := response.PageSlice()
-	if len(pl) < 1 {
+	pl := response.Query.Tokens.Csrftoken
+	if pl == "" {
 		return errors.New("no pages returned for edittoken query")
 	}
-	m.edittoken = pl[0].Edittoken
+	m.edittoken = pl
 	return nil
 }
 
@@ -434,12 +442,12 @@ func (m *MWApi) Logout() {
 //
 // Example:
 //
-//  editConfig := map[string]string{
-//      "title":   "SOME PAGE",
-//      "summary": "THIS IS WHAT SHOWS UP IN THE LOG",
-//      "text":    "THE ENTIRE TEXT OF THE PAGE",
-//  }
-//  err = client.Edit(editConfig)
+//	editConfig := map[string]string{
+//	    "title":   "SOME PAGE",
+//	    "summary": "THIS IS WHAT SHOWS UP IN THE LOG",
+//	    "text":    "THE ENTIRE TEXT OF THE PAGE",
+//	}
+//	err = client.Edit(editConfig)
 func (m *MWApi) Edit(values map[string]string) error {
 	if m.edittoken == "" {
 		err := m.GetEditToken()
