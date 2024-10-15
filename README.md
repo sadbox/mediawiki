@@ -2,6 +2,9 @@ go-mediawiki | [![CircleCI](https://circleci.com/gh/sadbox/mediawiki/tree/master
 ========
 A MediaWiki API wrapper for [Go](http://golang.org/).
 
+## NOTE: This repo has been archived/abandoned, please feel free to fork it if helpful, I expect (hope?) that the mediawiki API has changed since I wrote this a decade ago. 
+
+
 Documentation
 -------------
 Documentation specific to this implementation is [located on GoDoc](https://godoc.org/github.com/sadbox/mediawiki).
